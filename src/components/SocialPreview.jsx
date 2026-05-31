@@ -1,7 +1,7 @@
 "use client";
 
 import { useSettingsSnapshot } from "@/lib/storage";
-import { Camera, CheckCircle2, Hash, Globe, MonitorPlay, User, MessageCircle, Heart, Send, Bookmark, MoreHorizontal, Share2, Repeat2 } from "lucide-react";
+import { LucideCamera as Camera, CheckCircle2, Hash, Globe, MonitorPlay, User, MessageCircle, Heart, Send, Bookmark, MoreHorizontal, Share2, Repeat2 } from "lucide-react";
 
 export default function SocialPreview({ format, script, persona }) {
   const settings = useSettingsSnapshot();

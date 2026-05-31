@@ -12,10 +12,14 @@ export const metadata = {
   description: "AI-powered educational content, research, and communication strategy for schools.",
 };
 
+import AuthProvider from "@/components/SessionProvider";
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${plusJakarta.variable} font-sans h-full antialiased`} style={{ colorScheme: "light" }}>
-      <body className="min-h-full flex flex-col bg-[var(--bg)] text-[var(--txt)]">{children}</body>
+      <body className="min-h-full flex flex-col bg-[var(--bg)] text-[var(--txt)]">
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

@@ -1,263 +1,400 @@
 /**
- * SkilizeeAI — Simplified localStorage persistence (with workflow statuses & analytics)
+ * SkilizeeAI — Hybrid Storage Adapter syncing with Server-side Postgres via API
  */
 
-import { useMemo, useSyncExternalStore } from "react";
+import { useMemo, useSyncExternalStore, useEffect } from "react";
 
 const KEYS = {
-  research: "skilizee_research",
-  content: "skilizee_content",
+  research: "research",
+  content: "content",
+  stats: "stats",
+  insights: "insights",
 };
 
 const STORAGE_EVENT = "skilizee-storage-updated";
 
-function canUseStorage() {
-  return typeof window !== "undefined" && typeof localStorage !== "undefined";
+// In-memory cache to support synchronous returns needed by components
+let memoryCache = {
+  research: [],
+  content: [],
+  stats: {
+    totalResearch: 0,
+    pendingApproval: 0,
+    approved: 0,
+    published: 0,
+    totalContent: 0,
+    totalClicks: 0,
+    totalViews: 0,
+    totalReach: 0,
+    totalFollowers: 0,
+  },
+  insights: {
+    platformPerformance: [],
+    topTags: [],
+    topContent: [],
+    instagramPosts: [],
+    totals: { avgCtr: "0.0" },
+  },
+};
+
+let hasFetched = {
+  research: false,
+  content: false,
+  stats: false,
+  insights: false,
+};
+
+function triggerUpdate(key) {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent(STORAGE_EVENT, { detail: { key } }));
+  }
 }
 
-function readJSON(key) {
-  if (!canUseStorage()) return [];
-  try { return JSON.parse(localStorage.getItem(key) || "[]"); } catch { return []; }
-}
-
-function writeJSON(key, value) {
-  if (!canUseStorage()) return;
-  localStorage.setItem(key, JSON.stringify(value));
-  window.dispatchEvent(new CustomEvent(STORAGE_EVENT, { detail: { key } }));
-}
-
-function readStorageString(key, fallback) {
-  if (!canUseStorage()) return fallback;
-  return localStorage.getItem(key) ?? fallback;
-}
-
-function parseArraySnapshot(rawValue) {
+// Fetch helper functions
+async function fetchResearch() {
   try {
-    const parsed = JSON.parse(rawValue);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch { return []; }
+    const res = await fetch("/api/data/research");
+    if (res.ok) {
+      memoryCache.research = await res.json();
+      hasFetched.research = true;
+      triggerUpdate(KEYS.research);
+    }
+  } catch (err) {
+    console.error("Failed to fetch research from DB:", err);
+  }
 }
 
-function genId() {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+async function fetchContent() {
+  try {
+    const res = await fetch("/api/data/content");
+    if (res.ok) {
+      memoryCache.content = await res.json();
+      hasFetched.content = true;
+      triggerUpdate(KEYS.content);
+    }
+  } catch (err) {
+    console.error("Failed to fetch content from DB:", err);
+  }
+}
+
+async function fetchStats() {
+  try {
+    const res = await fetch("/api/data/stats");
+    if (res.ok) {
+      memoryCache.stats = await res.json();
+      hasFetched.stats = true;
+      triggerUpdate(KEYS.stats);
+    }
+  } catch (err) {
+    console.error("Failed to fetch stats from DB:", err);
+  }
+}
+
+async function fetchInsights() {
+  try {
+    const res = await fetch("/api/data/insights");
+    if (res.ok) {
+      memoryCache.insights = await res.json();
+      hasFetched.insights = true;
+      triggerUpdate(KEYS.insights);
+    }
+  } catch (err) {
+    console.error("Failed to fetch insights from DB:", err);
+  }
+}
+
+// Global fetch initiator
+export function triggerSync() {
+  fetchResearch();
+  fetchContent();
+  fetchStats();
+  fetchInsights();
+}
+
+// Start initial fetches in browser
+if (typeof window !== "undefined") {
+  // Let Next.js hydrate first, then sync
+  setTimeout(triggerSync, 500);
 }
 
 export function subscribeToStorage(callback) {
   if (typeof window === "undefined") return () => {};
   window.addEventListener(STORAGE_EVENT, callback);
-  window.addEventListener("storage", callback);
   return () => {
     window.removeEventListener(STORAGE_EVENT, callback);
-    window.removeEventListener("storage", callback);
   };
 }
 
-function useStorageString(key, fallback) {
-  return useSyncExternalStore(
-    subscribeToStorage,
-    () => readStorageString(key, fallback),
-    () => fallback
-  );
+// ═══ RESEARCH ═══
+
+export function getResearchHistory() {
+  if (typeof window !== "undefined" && !hasFetched.research) {
+    fetchResearch();
+  }
+  return memoryCache.research;
 }
 
-// ═══ RESEARCH ═══
+export function useResearchHistory() {
+  useEffect(() => {
+    if (!hasFetched.research) fetchResearch();
+  }, []);
+
+  const rawValue = useSyncExternalStore(
+    subscribeToStorage,
+    () => JSON.stringify(memoryCache.research),
+    () => "[]"
+  );
+  
+  return useMemo(() => {
+    try {
+      return JSON.parse(rawValue);
+    } catch {
+      return [];
+    }
+  }, [rawValue]);
+}
+
 export function saveResearch(data) {
-  const all = getResearchHistory();
+  // Optimistic update
   const entry = {
     ...data,
-    id: data.id || genId(),
+    id: data.id || `temp-${Date.now()}`,
     keyword: data.keyword || "Untitled",
     status: data.status || "pending",
     savedAt: data.savedAt || new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
-  
-  const existingIndex = all.findIndex(r => r.id === entry.id);
+
+  const existingIndex = memoryCache.research.findIndex(r => r.id === entry.id);
   if (existingIndex >= 0) {
-    all[existingIndex] = entry;
+    memoryCache.research[existingIndex] = entry;
   } else {
-    all.unshift(entry);
+    memoryCache.research.unshift(entry);
   }
   
-  if (all.length > 50) all.length = 50;
-  writeJSON(KEYS.research, all);
+  if (memoryCache.research.length > 50) memoryCache.research.length = 50;
+  triggerUpdate(KEYS.research);
+
+  // Sync to backend DB
+  fetch("/api/data/research", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  }).then(async (res) => {
+    if (res.ok) {
+      const savedEntry = await res.json();
+      // Replace optimistic temp ID if created
+      const index = memoryCache.research.findIndex(r => r.id === entry.id || r.id === savedEntry.id);
+      if (index >= 0) {
+        memoryCache.research[index] = savedEntry;
+      }
+      triggerUpdate(KEYS.research);
+      fetchStats();
+    }
+  });
+
   return entry;
 }
 
-export function getResearchHistory() {
-  return readJSON(KEYS.research);
-}
-
-export function useResearchHistory() {
-  const rawValue = useStorageString(KEYS.research, "[]");
-  return useMemo(() => parseArraySnapshot(rawValue), [rawValue]);
-}
-
 export function updateResearchStatus(id, status) {
-  const all = getResearchHistory();
-  const index = all.findIndex(r => r.id === id);
+  // Optimistic update
+  const index = memoryCache.research.findIndex(r => r.id === id);
   if (index >= 0) {
-    all[index].status = status;
-    all[index].updatedAt = new Date().toISOString();
-    writeJSON(KEYS.research, all);
+    memoryCache.research[index].status = status;
+    memoryCache.research[index].updatedAt = new Date().toISOString();
+    triggerUpdate(KEYS.research);
   }
+
+  // Sync to backend DB
+  fetch("/api/data/research", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, status }),
+  }).then((res) => {
+    if (res.ok) {
+      fetchResearch();
+      fetchStats();
+    }
+  });
 }
 
 // ═══ CONTENT ═══
+
+export function getContentHistory() {
+  if (typeof window !== "undefined" && !hasFetched.content) {
+    fetchContent();
+  }
+  return memoryCache.content;
+}
+
+export function useContentHistory() {
+  useEffect(() => {
+    if (!hasFetched.content) fetchContent();
+  }, []);
+
+  const rawValue = useSyncExternalStore(
+    subscribeToStorage,
+    () => JSON.stringify(memoryCache.content),
+    () => "[]"
+  );
+
+  return useMemo(() => {
+    try {
+      return JSON.parse(rawValue);
+    } catch {
+      return [];
+    }
+  }, [rawValue]);
+}
+
 export function saveContent(data) {
-  const all = getContentHistory();
+  // Optimistic update
   const entry = {
     ...data,
-    id: data.id || genId(),
+    id: data.id || `temp-${Date.now()}`,
     keyword: data.keyword || data.metadata?.keyword || "Untitled",
     format: data.format || data.metadata?.format || "youtube_long",
     savedAt: data.savedAt || new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
-  
-  const existingIndex = all.findIndex(c => c.id === entry.id);
+
+  const existingIndex = memoryCache.content.findIndex(c => c.id === entry.id);
   if (existingIndex >= 0) {
-    all[existingIndex] = entry;
+    memoryCache.content[existingIndex] = entry;
   } else {
-    all.unshift(entry);
+    memoryCache.content.unshift(entry);
   }
-  
-  if (all.length > 100) all.length = 100;
-  writeJSON(KEYS.content, all);
-  
-  // Link to research if possible
-  if (entry.metadata?.researchId) {
-    const research = getResearchHistory();
-    const rIndex = research.findIndex(r => r.id === entry.metadata.researchId);
-    if (rIndex >= 0) {
-      const r = research[rIndex];
-      r.relatedContentIds = [...new Set([...(r.relatedContentIds || []), entry.id])];
-      writeJSON(KEYS.research, research);
+
+  if (memoryCache.content.length > 100) memoryCache.content.length = 100;
+  triggerUpdate(KEYS.content);
+
+  // Sync to backend DB
+  fetch("/api/data/content", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  }).then(async (res) => {
+    if (res.ok) {
+      const savedEntry = await res.json();
+      const index = memoryCache.content.findIndex(c => c.id === entry.id || c.id === savedEntry.id);
+      if (index >= 0) {
+        memoryCache.content[index] = savedEntry;
+      }
+      triggerUpdate(KEYS.content);
+      fetchStats();
+      fetchInsights();
     }
-  }
-  
+  });
+
   return entry;
 }
 
-export function getContentHistory() {
-  return readJSON(KEYS.content);
-}
-
-export function useContentHistory() {
-  const rawValue = useStorageString(KEYS.content, "[]");
-  return useMemo(() => parseArraySnapshot(rawValue), [rawValue]);
-}
-
 export function updateContentBody(id, script) {
-  const all = getContentHistory();
-  const index = all.findIndex(c => c.id === id);
+  // Optimistic update
+  const index = memoryCache.content.findIndex(c => c.id === id);
   if (index >= 0) {
-    all[index].script = script;
-    all[index].updatedAt = new Date().toISOString();
-    writeJSON(KEYS.content, all);
+    memoryCache.content[index].script = script;
+    memoryCache.content[index].updatedAt = new Date().toISOString();
+    triggerUpdate(KEYS.content);
   }
+
+  // Sync to backend DB
+  fetch("/api/data/content", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, script }),
+  }).then((res) => {
+    if (res.ok) {
+      fetchContent();
+    }
+  });
 }
 
 export function updateContentTracking(id, trackingData) {
-  const all = getContentHistory();
-  const index = all.findIndex(c => c.id === id);
+  // Optimistic update
+  const index = memoryCache.content.findIndex(c => c.id === id);
+  let optimisticEntry = null;
   if (index >= 0) {
-    all[index].publication = { ...(all[index].publication || {}), ...(trackingData.publication || {}) };
-    all[index].performance = { ...(all[index].performance || {}), ...(trackingData.performance || {}) };
-    all[index].updatedAt = new Date().toISOString();
-    writeJSON(KEYS.content, all);
-    return all[index];
+    memoryCache.content[index].publication = { 
+      ...(memoryCache.content[index].publication || {}), 
+      ...(trackingData.publication || {}) 
+    };
+    memoryCache.content[index].performance = { 
+      ...(memoryCache.content[index].performance || {}), 
+      ...(trackingData.performance || {}) 
+    };
+    memoryCache.content[index].updatedAt = new Date().toISOString();
+    optimisticEntry = memoryCache.content[index];
+    triggerUpdate(KEYS.content);
   }
-  return null;
+
+  // Sync to backend DB
+  fetch("/api/data/content", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ 
+      id, 
+      publication: trackingData.publication, 
+      performance: trackingData.performance 
+    }),
+  }).then((res) => {
+    if (res.ok) {
+      fetchContent();
+      fetchStats();
+      fetchInsights();
+    }
+  });
+
+  return optimisticEntry;
 }
 
 export function getWorkflowStage(entry) {
-  return entry?.status || "saved";
+  return entry?.status || entry?.stage || "saved";
 }
 
-// ═══ ANALYTICS ═══
+// ═══ ANALYTICS & STATS ═══
+
 export function useStats() {
-  const research = useResearchHistory();
-  const content = useContentHistory();
+  useEffect(() => {
+    if (!hasFetched.stats) fetchStats();
+  }, []);
+
+  const rawValue = useSyncExternalStore(
+    subscribeToStorage,
+    () => JSON.stringify(memoryCache.stats),
+    () => JSON.stringify(memoryCache.stats)
+  );
 
   return useMemo(() => {
-    const stats = {
-      totalResearch: research.length,
-      pendingApproval: research.filter(r => (r.status || "pending") === "pending").length,
-      approved: research.filter(r => r.status === "approved").length,
-      published: research.filter(r => r.status === "published").length,
-      totalContent: content.length,
-      totalClicks: content.reduce((acc, c) => acc + (c.performance?.clicks || 0), 0),
-      totalViews: content.reduce((acc, c) => acc + (c.performance?.views || 0), 0),
-    };
-    return stats;
-  }, [research, content]);
+    try {
+      return JSON.parse(rawValue);
+    } catch {
+      return memoryCache.stats;
+    }
+  }, [rawValue]);
 }
 
 export function usePerformanceInsights() {
-  const content = useContentHistory();
+  useEffect(() => {
+    if (!hasFetched.insights) fetchInsights();
+  }, []);
+
+  const rawValue = useSyncExternalStore(
+    subscribeToStorage,
+    () => JSON.stringify(memoryCache.insights),
+    () => JSON.stringify(memoryCache.insights)
+  );
 
   return useMemo(() => {
-    const platformMap = {};
-    const tagMap = {};
-    let totalClicks = 0;
-    let totalViews = 0;
-
-    content.forEach(c => {
-      const clicks = c.performance?.clicks || 0;
-      const views = c.performance?.views || 0;
-      const platform = c.publication?.platform || "unknown";
-      const tags = c.tagSnapshot || [];
-
-      totalClicks += clicks;
-      totalViews += views;
-
-      if (!platformMap[platform]) platformMap[platform] = 0;
-      platformMap[platform] += clicks;
-
-      tags.forEach(tag => {
-        if (!tagMap[tag]) tagMap[tag] = { totalClicks: 0, posts: 0 };
-        tagMap[tag].totalClicks += clicks;
-        tagMap[tag].posts += 1;
-      });
-    });
-
-    const platformPerformance = Object.entries(platformMap).map(([platform, totalClicks]) => ({
-      platform,
-      totalClicks
-    }));
-
-    const topTags = Object.entries(tagMap)
-      .map(([tag, data]) => ({ tag, ...data }))
-      .sort((a, b) => b.totalClicks - a.totalClicks);
-
-    const topContent = content
-      .map(c => ({
-        id: c.id,
-        keyword: c.keyword,
-        format: c.format,
-        views: c.performance?.views || 0,
-        clicks: c.performance?.clicks || 0,
-        ctr: c.performance?.views ? ((c.performance.clicks / c.performance.views) * 100).toFixed(1) : "0.0",
-        tags: c.tagSnapshot || [],
-        publishedUrl: c.publication?.publishedUrl
-      }))
-      .sort((a, b) => b.clicks - a.clicks)
-      .slice(0, 5);
-
-    return {
-      platformPerformance,
-      topTags,
-      topContent,
-      totals: {
-        avgCtr: totalViews ? ((totalClicks / totalViews) * 100).toFixed(1) : "0.0"
-      }
-    };
-  }, [content]);
+    try {
+      return JSON.parse(rawValue);
+    } catch {
+      return memoryCache.insights;
+    }
+  }, [rawValue]);
 }
 
 // --- SETTINGS (MOCK) ---
 export function useSettingsSnapshot() {
   return { schoolName: "Skilizee Academy", schoolVision: "Shaping the future of education" };
 }
-

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { Search, MonitorPlay, Camera, Hash, MessageSquare, Newspaper, Eye, Heart, ExternalLink, Zap, TrendingUp, Bell, ArrowRight } from "lucide-react";
+import { Search, MonitorPlay, LucideCamera as Camera, Hash, MessageSquare, Newspaper, Eye, Heart, ExternalLink, Zap, TrendingUp, Bell, ArrowRight } from "lucide-react";
 
 const PLATFORMS = [
   { id: "youtube", label: "YouTube", icon: MonitorPlay, color: "bg-red-500/15 text-red-400 border-red-500/20" },
