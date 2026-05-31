@@ -31,27 +31,27 @@ function buildGraphUrl(path, params = {}) {
   return url;
 }
 
-function getInstagramSyncConfig() {
-  const accessToken = process.env.META_ACCESS_TOKEN;
-  const instagramAccountId = process.env.META_IG_ACCOUNT_ID;
+function getInstagramSyncConfig(accessToken, instagramAccountId) {
+  // Fallback to env variables if not provided dynamically (keeps compatibility)
+  const token = accessToken || process.env.META_ACCESS_TOKEN;
+  const id = instagramAccountId || process.env.META_IG_ACCOUNT_ID;
   const missing = [];
 
-  if (!accessToken) missing.push("META_ACCESS_TOKEN");
-  if (!instagramAccountId) missing.push("META_IG_ACCOUNT_ID");
+  if (!token) missing.push("META_ACCESS_TOKEN");
+  if (!id) missing.push("META_IG_ACCOUNT_ID");
 
   return {
     ready: missing.length === 0,
     missing,
-    accessToken,
-    instagramAccountId,
+    accessToken: token,
+    instagramAccountId: id,
     graphVersion: DEFAULT_GRAPH_VERSION,
   };
 }
 
-async function graphRequest(path, params = {}) {
-  const config = getInstagramSyncConfig();
-  if (!config.ready) {
-    throw new Error(`Missing Meta configuration: ${config.missing.join(", ")}`);
+async function graphRequest(path, config, params = {}) {
+  if (!config || !config.ready) {
+    throw new Error(`Missing Meta configuration: ${config?.missing?.join(", ") || "No config passed"}`);
   }
 
   const url = buildGraphUrl(path, {
@@ -77,19 +77,18 @@ async function graphRequest(path, params = {}) {
   return payload;
 }
 
-async function getMediaDetails(mediaId) {
-  return graphRequest(`/${mediaId}`, {
+async function getMediaDetails(mediaId, config) {
+  return graphRequest(`/${mediaId}`, config, {
     fields: "id,caption,comments_count,like_count,media_product_type,media_type,permalink,timestamp",
   });
 }
 
-async function findMediaByPermalink(publishedUrl) {
-  const config = getInstagramSyncConfig();
+async function findMediaByPermalink(publishedUrl, config) {
   const targetPermalink = normalizePermalink(publishedUrl);
 
   let after = "";
   for (let page = 0; page < MAX_MEDIA_PAGES; page += 1) {
-    const payload = await graphRequest(`/${config.instagramAccountId}/media`, {
+    const payload = await graphRequest(`/${config.instagramAccountId}/media`, config, {
       fields: "id,caption,comments_count,like_count,media_product_type,media_type,permalink,timestamp",
       limit: MEDIA_PAGE_LIMIT,
       after,
@@ -117,10 +116,10 @@ function readInsightMetric(insights = [], metricName) {
   return typeof metric.value === "number" ? metric.value : Number(metric.value) || 0;
 }
 
-async function getMediaInsights(mediaId) {
+async function getMediaInsights(mediaId, config) {
   for (const metrics of INSIGHT_METRIC_ATTEMPTS) {
     try {
-      const payload = await graphRequest(`/${mediaId}/insights`, {
+      const payload = await graphRequest(`/${mediaId}/insights`, config, {
         metric: metrics.join(","),
       });
       return payload?.data || [];
@@ -132,8 +131,8 @@ async function getMediaInsights(mediaId) {
   return [];
 }
 
-export function getInstagramSyncStatus() {
-  const config = getInstagramSyncConfig();
+export function getInstagramSyncStatus(accessToken, instagramAccountId) {
+  const config = getInstagramSyncConfig(accessToken, instagramAccountId);
   return {
     ready: config.ready,
     missing: config.missing,
@@ -141,7 +140,7 @@ export function getInstagramSyncStatus() {
   };
 }
 
-export async function syncInstagramPost({ publishedUrl = "", postId = "" } = {}) {
+export async function syncInstagramPost({ publishedUrl = "", postId = "", accessToken = "", instagramAccountId = "" } = {}) {
   const normalizedUrl = normalizePermalink(publishedUrl);
   const normalizedPostId = String(postId || "").trim();
 
@@ -153,15 +152,17 @@ export async function syncInstagramPost({ publishedUrl = "", postId = "" } = {})
     throw new Error("Instagram sync requires an instagram.com post URL.");
   }
 
+  const config = getInstagramSyncConfig(accessToken, instagramAccountId);
+
   const media = normalizedPostId
-    ? await getMediaDetails(normalizedPostId)
-    : await findMediaByPermalink(normalizedUrl);
+    ? await getMediaDetails(normalizedPostId, config)
+    : await findMediaByPermalink(normalizedUrl, config);
 
   if (!media?.id) {
     throw new Error("Instagram media was not found on the connected account.");
   }
 
-  const insights = await getMediaInsights(media.id);
+  const insights = await getMediaInsights(media.id, config);
   const timestamp = new Date().toISOString();
   const views = readInsightMetric(insights, "views") || readInsightMetric(insights, "reach");
   const impressions = readInsightMetric(insights, "impressions") || readInsightMetric(insights, "reach");

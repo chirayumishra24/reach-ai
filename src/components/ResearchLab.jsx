@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { MonitorPlay, Camera, Hash, MessageSquare, Newspaper, Zap, BarChart2, Search, Globe, Heart, ArrowRight, Flame, Lightbulb, Target, Loader2, Sparkles, Compass, Repeat2, Play, User, ExternalLink, MessageCircle } from "lucide-react";
+import { MonitorPlay, LucideCamera as Camera, Hash, MessageSquare, Newspaper, Zap, BarChart2, Search, Globe, Heart, ArrowRight, Flame, Lightbulb, Target, Loader2, Sparkles, Compass, Repeat2, Play, User, ExternalLink, MessageCircle } from "lucide-react";
 
 const PLATFORMS_LIST = [
   { id: "youtube", label: "YouTube", icon: MonitorPlay },
