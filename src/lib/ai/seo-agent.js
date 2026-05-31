@@ -1,5 +1,5 @@
 /**
- * SkilizeeAI — SEO Agent (2026 Edition)
+ * Reach.ai — SEO Agent (2026 Edition)
  * Precision tags, titles, descriptions with 2026 algorithm awareness.
  */
 

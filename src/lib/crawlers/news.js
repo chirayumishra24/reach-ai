@@ -1,5 +1,5 @@
 /**
- * SkilizeeAI — News Crawler
+ * Reach.ai — News Crawler
  * Google News + Bing News RSS aggregation.
  */
 
@@ -14,7 +14,7 @@ export async function searchNews(query) {
   await Promise.all(sources.map(async (src) => {
     try {
       const res = await fetch(src.url, {
-        headers: { "User-Agent": "SkilizeeAI/2.0 (NewsDiscovery)" },
+        headers: { "User-Agent": "Reach.ai/2.0 (NewsDiscovery)" },
         signal: AbortSignal.timeout(10000),
       });
       if (!res.ok) return;

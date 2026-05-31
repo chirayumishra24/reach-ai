@@ -49,7 +49,7 @@ It is designed for:
 
 Prototype sample users are defined in `src/lib/db/schema.js`:
 
-- `smm@skilizee.local`
-- `admin@skilizee.local`
+- `smm@reach.local`
+- `admin@reach.local`
 
 These are still prototype identities. Real auth and shared persistence should be built on top of this schema next.

@@ -1,5 +1,5 @@
 /**
- * SkilizeeAI — Reddit Crawler
+ * Reach.ai — Reddit Crawler
  * Search + hot/rising with virality scoring.
  */
 
@@ -7,7 +7,7 @@ export async function searchReddit(query, maxResults = 10) {
   try {
     const url = `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&sort=relevance&t=month&limit=${maxResults}`;
     const res = await fetch(url, {
-      headers: { "User-Agent": "SkilizeeAI/2.0 (ContentIntelligence)" },
+      headers: { "User-Agent": "Reach.ai/2.0 (ContentIntelligence)" },
       signal: AbortSignal.timeout(10000),
     });
     if (!res.ok) return [];
@@ -39,7 +39,7 @@ export async function getRedditHot(subreddits = ["all"], limit = 5) {
   await Promise.all(subs.map(async (sub) => {
     try {
       const res = await fetch(`https://www.reddit.com/r/${sub}/hot.json?limit=${limit}`, {
-        headers: { "User-Agent": "SkilizeeAI/2.0" },
+        headers: { "User-Agent": "Reach.ai/2.0" },
         signal: AbortSignal.timeout(8000),
       });
       if (!res.ok) return;

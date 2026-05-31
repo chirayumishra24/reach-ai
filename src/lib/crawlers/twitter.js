@@ -1,5 +1,5 @@
 /**
- * SkilizeeAI — X/Twitter Crawler
+ * Reach.ai — X/Twitter Crawler
  * Primary: twitter241.p.rapidapi.com API
  * Fallback 1: Nitter RSS proxy
  * Fallback 2: Hardcoded templates
@@ -148,7 +148,7 @@ async function searchViaNitter(query) {
     try {
       const url = `${instance}/search/rss?f=tweets&q=${encodeURIComponent(query)}`;
       const res = await fetch(url, {
-        headers: { "User-Agent": "SkilizeeAI/2.0" },
+        headers: { "User-Agent": "Reach.ai/2.0" },
         signal: AbortSignal.timeout(8000),
       });
       if (!res.ok) continue;

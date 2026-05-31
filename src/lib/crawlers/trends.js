@@ -1,5 +1,5 @@
 /**
- * SkilizeeAI — Google Trends Crawler
+ * Reach.ai — Google Trends Crawler
  * Keyword interest, related queries, regional data.
  */
 
@@ -8,7 +8,7 @@ export async function getTrends(keyword, region = "IN") {
   try {
     const url = `https://trends.google.com/trending/rss?geo=${region}`;
     const res = await fetch(url, {
-      headers: { "User-Agent": "SkilizeeAI/2.0" },
+      headers: { "User-Agent": "Reach.ai/2.0" },
       signal: AbortSignal.timeout(8000),
     });
 

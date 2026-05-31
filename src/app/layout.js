@@ -8,7 +8,7 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata = {
-  title: "Skilizee Edu — Educational Content Engine",
+  title: "Reach.ai — Educational Content Engine",
   description: "AI-powered educational content, research, and communication strategy for schools.",
 };
 

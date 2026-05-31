@@ -1,5 +1,5 @@
 /**
- * SkilizeeAI — Hybrid Storage Adapter syncing with Server-side Postgres via API
+ * Reach.ai — Hybrid Storage Adapter syncing with Server-side Postgres via API
  */
 
 import { useMemo, useSyncExternalStore, useEffect } from "react";
@@ -11,7 +11,7 @@ const KEYS = {
   insights: "insights",
 };
 
-const STORAGE_EVENT = "skilizee-storage-updated";
+const STORAGE_EVENT = "reach-storage-updated";
 
 // In-memory cache to support synchronous returns needed by components
 let memoryCache = {
@@ -396,5 +396,5 @@ export function usePerformanceInsights() {
 
 // --- SETTINGS (MOCK) ---
 export function useSettingsSnapshot() {
-  return { schoolName: "Skilizee Academy", schoolVision: "Shaping the future of education" };
+  return { schoolName: "Reach.ai Workspace", schoolVision: "Shaping the future of education" };
 }

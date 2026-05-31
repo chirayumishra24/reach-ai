@@ -1,5 +1,5 @@
 /**
- * SkilizeeAI — Research Agent (2026 Edition)
+ * Reach.ai — Research Agent (2026 Edition)
  * Deep topic R&D focused on current trends, live signals, and viral fit.
  */
 

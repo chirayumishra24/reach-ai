@@ -1,5 +1,5 @@
 /**
- * SkilizeeAI — Unified Gemini 3.1 Pro Client
+ * Reach.ai — Unified Gemini 3.1 Pro Client
  * Central AI wrapper with retry logic, JSON mode, and model selection.
  */
 

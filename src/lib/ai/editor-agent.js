@@ -1,5 +1,5 @@
 /**
- * SkilizeeAI — Editor Agent (2026 Edition)
+ * Reach.ai — Editor Agent (2026 Edition)
  * Ruthless content polishing: hook scoring, retention loops, CTA optimization.
  */
 

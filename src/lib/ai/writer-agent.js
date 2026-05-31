@@ -1,5 +1,5 @@
 /**
- * SkilizeeAI — Writer Agent (2026 Edition)
+ * Reach.ai — Writer Agent (2026 Edition)
  * Generates dramatically better, more human, platform-optimized scripts.
  */
 

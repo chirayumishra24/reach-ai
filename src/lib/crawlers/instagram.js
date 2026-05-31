@@ -1,5 +1,5 @@
 /**
- * SkilizeeAI — Instagram Crawler
+ * Reach.ai — Instagram Crawler
  * Uses instagram120.p.rapidapi.com for real post/reel data.
  * Falls back to intelligent format recommendations when no API key.
  */

@@ -1,4 +1,4 @@
-# Skilizee Edu — Master Build Plan
+# Reach.ai — Master Build Plan
 
 > **Stack:** Next.js 16, Tailwind v4, Gemini 3.1 Pro, Recharts
 > **Last Updated:** 2026-04-25
@@ -109,7 +109,7 @@ are unreliable and frequently go offline.
 ### 10.4 Updated `.env.local` Structure
 
 ```env
-# SkilizeeAI — API Keys & Config
+# Reach.ai — API Keys & Config
 GEMINI_API_KEY=your_gemini_key
 YOUTUBE_API_KEY=your_youtube_key
 
@@ -207,7 +207,7 @@ User searches "NEP 2020 changes"
 ---
 
 ## Phase 12 — Mobile Continuity & Voice
-- [ ] 12.1 **PWA Setup**: Make Skilizee installable on mobile for on-the-go director research.
+- [ ] 12.1 **PWA Setup**: Make Reach.ai installable on mobile for on-the-go director research.
 - [ ] 12.2 **Voice-to-Research**: Add voice dictation for initializing research lab cycles.
 
 ---

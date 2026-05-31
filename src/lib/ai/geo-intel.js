@@ -1,5 +1,5 @@
 /**
- * SkilizeeAI — Geo-Intelligence Module
+ * Reach.ai — Geo-Intelligence Module
  * Location-aware content adaptation.
  */
 
