@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { MonitorPlay, Smartphone, Clapperboard, Layers, Hash, Briefcase, BookOpen, PenTool, Sparkles, Bot, Tag, Edit3, Loader2, Copy, FileText, Globe, Flame, Wand2, X, Save, CheckCircle2 } from "lucide-react";
+import { MonitorPlay, Smartphone, Clapperboard, Layers, Hash, Briefcase, BookOpen, PenTool, Sparkles, Bot, Tag, Edit3, Loader2, Copy, FileText, Globe, Flame, Wand2, X, Save, CheckCircle2, Volume2, VolumeX, Layers3, ArrowLeft, ArrowRight } from "lucide-react";
 import { saveContent } from "@/lib/storage";
 
 const FORMATS = [
@@ -26,8 +26,9 @@ export default function ContentStudio({ researchContext, onSchedulePost }) {
   const [result, setResult] = useState(null);
   const [bundleResult, setBundleResult] = useState(null);
   const [error, setError] = useState(null);
-  const [tab, setTab] = useState("script");
   const [isSaved, setIsSaved] = useState(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [viewMode, setViewMode] = useState("script"); // "script" or "carousel"
   const [performanceData, setPerformanceData] = useState([]);
 
   useEffect(() => {
@@ -110,6 +111,50 @@ export default function ContentStudio({ researchContext, onSchedulePost }) {
       setTimeout(() => setIsSaved(false), 3000);
     } catch (e) { console.error(e); }
   };
+
+  const toggleVoiceover = () => {
+    if (!result?.script) return;
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      alert("Web Speech API is not supported in this browser.");
+      return;
+    }
+    if (isPlayingAudio) {
+      window.speechSynthesis.cancel();
+      setIsPlayingAudio(false);
+    } else {
+      window.speechSynthesis.cancel();
+      const textToRead = result.script.replace(/\[.*?\]/g, "").substring(0, 400);
+      const utterance = new SpeechSynthesisUtterance(textToRead);
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      utterance.onend = () => setIsPlayingAudio(false);
+      utterance.onerror = () => setIsPlayingAudio(false);
+      setIsPlayingAudio(true);
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  // Helper to parse carousel slides from script text
+  const parseCarouselSlides = (scriptText) => {
+    if (!scriptText) return [];
+    const lines = scriptText.split("\n").filter(l => l.trim().length > 0);
+    const slides = [];
+    let currentSlide = null;
+
+    lines.forEach((line) => {
+      if (/slide/i.test(line) || /page/i.test(line) || /^#+/i.test(line) || /^\d+[\.\)]/.test(line)) {
+        if (currentSlide) slides.push(currentSlide);
+        currentSlide = { title: line.replace(/^#+\s*|\d+[\.\)]\s*/, ""), content: [] };
+      } else {
+        if (!currentSlide) currentSlide = { title: "Slide 1: Intro", content: [] };
+        currentSlide.content.push(line);
+      }
+    });
+    if (currentSlide) slides.push(currentSlide);
+    return slides.length > 0 ? slides : [{ title: "Slide 1", content: [scriptText] }];
+  };
+
+  const carouselSlides = result ? parseCarouselSlides(result.script) : [];
 
   return (
     <div className="min-h-screen bg-desk-canvas p-6 lg:p-10 max-w-7xl mx-auto space-y-8 animate-fade-in font-sans text-[#1E2330]">
@@ -199,7 +244,6 @@ export default function ContentStudio({ researchContext, onSchedulePost }) {
 
           {/* Row 2: 3 Horizontal Controls (Format, Tone, Target Audience) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-            {/* Format Card */}
             <div className="p-4 rounded-xl bg-[#FAF8F3] border border-[#E3DCCF] space-y-2">
               <label className="block text-[10px] font-y2k font-extrabold uppercase tracking-widest text-slate-500">
                 Content Format
@@ -217,7 +261,6 @@ export default function ContentStudio({ researchContext, onSchedulePost }) {
               </select>
             </div>
 
-            {/* Tone Card */}
             <div className="p-4 rounded-xl bg-[#FAF8F3] border border-[#E3DCCF] space-y-2">
               <label className="block text-[10px] font-y2k font-extrabold uppercase tracking-widest text-slate-500">
                 Voice &amp; Tone
@@ -235,7 +278,6 @@ export default function ContentStudio({ researchContext, onSchedulePost }) {
               </select>
             </div>
 
-            {/* Target Audience Card */}
             <div className="p-4 rounded-xl bg-[#FAF8F3] border border-[#E3DCCF] space-y-2">
               <label className="block text-[10px] font-y2k font-extrabold uppercase tracking-widest text-slate-500">
                 Target Audience
@@ -317,8 +359,45 @@ export default function ContentStudio({ researchContext, onSchedulePost }) {
                 <span className="sticker-highlight-green px-3 py-1 text-[10px]">
                   {style}
                 </span>
+
+                {/* View Mode Switcher for Carousel */}
+                {format.includes("carousel") && (
+                  <div className="flex items-center gap-1 bg-[#FAF8F3] p-1 rounded-lg border border-[#E3DCCF]">
+                    <button
+                      onClick={() => setViewMode("script")}
+                      className={`px-3 py-1 text-[10px] font-y2k font-bold rounded cursor-pointer ${
+                        viewMode === "script" ? "blue-label-tag text-white" : "text-slate-600"
+                      }`}
+                    >
+                      Script View
+                    </button>
+                    <button
+                      onClick={() => setViewMode("carousel")}
+                      className={`px-3 py-1 text-[10px] font-y2k font-bold rounded cursor-pointer ${
+                        viewMode === "carousel" ? "blue-label-tag text-white" : "text-slate-600"
+                      }`}
+                    >
+                      Slide Deck View
+                    </button>
+                  </div>
+                )}
               </div>
+
               <div className="flex items-center gap-2">
+                {/* Voiceover Speech Narration Button */}
+                <button
+                  onClick={toggleVoiceover}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-y2k font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
+                    isPlayingAudio
+                      ? "sticker-highlight-orange text-white animate-pulse"
+                      : "bg-white border-[#E3DCCF] text-slate-700 hover:bg-[#EFEADF]"
+                  }`}
+                  title="Voiceover audio preview"
+                >
+                  {isPlayingAudio ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-blue-600" />}
+                  {isPlayingAudio ? "Stop Voice" : "Voice Preview"}
+                </button>
+
                 <button
                   onClick={handleSave}
                   className={`px-4 py-2 rounded-xl text-xs font-y2k font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
@@ -328,7 +407,7 @@ export default function ContentStudio({ researchContext, onSchedulePost }) {
                   }`}
                 >
                   {isSaved ? <CheckCircle2 className="w-4 h-4 text-slate-900" /> : <Save className="w-4 h-4" />}
-                  {isSaved ? "Saved to Pipeline" : "Save Script"}
+                  {isSaved ? "Saved" : "Save Script"}
                 </button>
                 {onSchedulePost && (
                   <button
@@ -341,11 +420,40 @@ export default function ContentStudio({ researchContext, onSchedulePost }) {
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="p-6 rounded-xl bg-[#FAF8F3] border border-[#E3DCCF] font-sans text-sm text-[#1E2330] leading-relaxed whitespace-pre-wrap">
-                {result.script}
+            {/* Slide Deck View vs Standard Script View */}
+            {viewMode === "carousel" && format.includes("carousel") ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-[#E3DCCF] pb-2">
+                  <h4 className="text-xs font-y2k font-extrabold text-[#1E2330] uppercase tracking-wider flex items-center gap-2">
+                    <Layers3 className="w-4 h-4 text-blue-600" /> Visual Carousel Slide Deck ({carouselSlides.length} Slides)
+                  </h4>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {carouselSlides.map((slide, idx) => (
+                    <div key={idx} className="p-5 rounded-xl bg-[#FAF8F3] border border-[#E3DCCF] shadow-sm relative space-y-3 hover:shadow-md transition-all">
+                      <div className="flex items-center justify-between border-b border-[#E3DCCF] pb-2">
+                        <span className="text-[10px] font-y2k font-bold text-blue-600 uppercase tracking-widest">
+                          Slide {idx + 1}
+                        </span>
+                        <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+                      </div>
+                      <h5 className="text-xs font-y2k font-extrabold text-[#1E2330]">{slide.title}</h5>
+                      <div className="text-[11px] font-sans text-slate-700 leading-relaxed space-y-1">
+                        {slide.content.map((line, lIdx) => (
+                          <p key={lIdx}>{line}</p>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="p-6 rounded-xl bg-[#FAF8F3] border border-[#E3DCCF] font-sans text-sm text-[#1E2330] leading-relaxed whitespace-pre-wrap">
+                  {result.script}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -356,7 +464,7 @@ export default function ContentStudio({ researchContext, onSchedulePost }) {
 function Field({ label, children }) {
   return (
     <div className="space-y-1">
-      <label className="block text-[10px] font-y2k font-extrabold uppercase tracking-widest text-slate-500">
+      <label className="block text-[10px] font-y2k font-extrabold uppercase tracking-widest text-slate-500 mb-1">
         {label}
       </label>
       {children}
