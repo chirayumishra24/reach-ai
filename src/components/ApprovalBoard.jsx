@@ -401,21 +401,21 @@ export default function ApprovalBoard({ onPublishPost }) {
   }
 
   return (
-    <div className="p-6 lg:p-10 max-w-[1600px] mx-auto space-y-10 animate-fade-in">
-      <div className="space-y-8 border-b border-border pb-10">
-        <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-10">
-          <div className="space-y-4">
+    <div className="min-h-screen bg-desk-canvas p-6 lg:p-10 max-w-[1600px] mx-auto space-y-8 animate-fade-in font-sans text-[#1E2330]">
+      <div className="space-y-6 border-b-2 border-[#E3DCCF] pb-6">
+        <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+          <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-inner">
-                <ListChecks className="w-6 h-6" strokeWidth={3} />
+              <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md transform -rotate-2">
+                <ListChecks className="w-5 h-5" strokeWidth={3} />
               </div>
               <div>
-                <h3 className="text-4xl font-black text-txt tracking-tighter">Director&apos;s Board</h3>
-                <p className="text-sm text-txt-muted font-bold tracking-wide uppercase opacity-60">Strategic Content Pipeline</p>
+                <h3 className="text-3xl font-y2k font-extrabold text-[#1E2330] tracking-tight">Director&apos;s Board</h3>
+                <p className="text-xs font-handwriting text-slate-600 font-bold">Strategic Content Pipeline</p>
               </div>
             </div>
-            <p className="max-w-2xl text-sm text-txt-secondary font-medium leading-relaxed">
-              Review scripts, publish them immediately after editor approval, and attach the Instagram or Facebook link later to track performance and improve the next outputs.
+            <p className="max-w-2xl text-xs text-slate-600 font-medium leading-relaxed">
+              Review scripts, publish them immediately after editor approval, and attach the Instagram or Facebook link later to track performance.
             </p>
           </div>
 

@@ -74,49 +74,50 @@ export default function ContentCalendar({ onSelectPost }) {
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   return (
-    <div className="p-6 lg:p-10 max-w-7xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 rounded-[2rem] bg-white border border-border p-5 shadow-sm">
+    <div className="min-h-screen bg-desk-canvas p-6 lg:p-10 max-w-6xl mx-auto space-y-8 animate-fade-in font-sans text-[#1E2330]">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-2 border-[#E3DCCF] pb-4">
         <div>
-          <h3 className="text-xl font-black tracking-tight text-txt flex items-center gap-2">
-            <CalendarIcon className="w-5 h-5 text-primary" /> Content Scheduler &amp; Calendar
+          <h3 className="text-2xl font-y2k font-extrabold text-[#1E2330] tracking-tight flex items-center gap-2">
+            <CalendarIcon className="w-6 h-6 text-blue-600" strokeWidth={2.5} /> Content Calendar
           </h3>
-          <p className="mt-1 text-sm text-txt-muted font-medium">Track your scheduled posts, queue updates, and drafts.</p>
+          <p className="text-xs text-slate-600 font-medium">Track local drafts and live Meta scheduled posts across your pipeline.</p>
         </div>
-        <div className="flex items-center gap-4">
+
+        <div className="flex items-center gap-3">
           <button
             onClick={fetchMetaScheduled}
-            disabled={loading}
-            className="p-2 rounded-xl bg-bg-elevated border border-border cursor-pointer hover:bg-bg-card transition-all"
+            className="p-2 rounded-xl bg-white border border-[#E3DCCF] cursor-pointer hover:bg-[#EFEADF] transition-all shadow-xs"
             title="Refresh schedule"
           >
-            <RefreshCw className={`w-4 h-4 text-txt-muted ${loading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-4 h-4 text-slate-600 ${loading ? "animate-spin" : ""}`} />
           </button>
           <div className="flex items-center gap-2">
-            <button onClick={prevMonth} className="p-2 rounded-xl bg-bg-elevated border border-border cursor-pointer hover:bg-bg-card transition-all">
-              <ChevronLeft className="w-4 h-4 text-txt-muted" />
+            <button onClick={prevMonth} className="p-2 rounded-xl bg-white border border-[#E3DCCF] cursor-pointer hover:bg-[#EFEADF] transition-all shadow-xs">
+              <ChevronLeft className="w-4 h-4 text-slate-600" />
             </button>
-            <span className="text-sm font-black text-txt w-36 text-center">
+            <span className="text-sm font-y2k font-extrabold text-[#1E2330] w-36 text-center">
               {currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
             </span>
-            <button onClick={nextMonth} className="p-2 rounded-xl bg-bg-elevated border border-border cursor-pointer hover:bg-bg-card transition-all">
-              <ChevronRight className="w-4 h-4 text-txt-muted" />
+            <button onClick={nextMonth} className="p-2 rounded-xl bg-white border border-[#E3DCCF] cursor-pointer hover:bg-[#EFEADF] transition-all shadow-xs">
+              <ChevronRight className="w-4 h-4 text-slate-600" />
             </button>
           </div>
         </div>
       </div>
 
-      <div className="rounded-[2rem] border border-border bg-white overflow-hidden shadow-sm">
-        <div className="grid grid-cols-7 border-b border-border bg-bg-elevated/30">
+      <div className="paper-sheet-binder p-6 shadow-xl border-2 border-[#E3DCCF] relative">
+        <div className="absolute top-0 left-0 right-0 h-4 paper-binder-holes opacity-60" />
+        <div className="grid grid-cols-7 border-b border-[#E3DCCF] bg-[#FAF8F3] pt-2 pb-2">
           {DAYS.map((day) => (
-            <div key={day} className="p-3 text-center text-[11px] font-black uppercase tracking-[0.16em] text-txt-muted border-r border-border last:border-r-0">
+            <div key={day} className="text-center text-[10px] font-y2k font-extrabold uppercase tracking-widest text-slate-500">
               {day}
             </div>
           ))}
         </div>
 
-        <div className="grid grid-cols-7 auto-rows-[130px]">
+        <div className="grid grid-cols-7 auto-rows-[130px] border-t border-l border-[#E3DCCF]">
           {blanks.map((i) => (
-            <div key={`blank-${i}`} className="border-r border-b border-border bg-bg-card/20" />
+            <div key={`blank-${i}`} className="border-r border-b border-[#E3DCCF] bg-[#FAF8F3]/50" />
           ))}
 
           {days.map((day) => {
@@ -125,9 +126,9 @@ export default function ContentCalendar({ onSelectPost }) {
             const itemsToday = allScheduledItems.filter((item) => item.scheduledDate === dateStr);
 
             return (
-              <div key={day} className={`p-2 border-r border-b border-border relative group ${isToday ? "bg-primary/5" : "bg-white"}`}>
+              <div key={day} className={`p-2 border-r border-b border-[#E3DCCF] relative group ${isToday ? "bg-yellow-100/50" : "bg-white"}`}>
                 <div className="flex justify-between items-center">
-                  <span className={`text-xs font-black ${isToday ? "w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center animate-pulse" : "text-txt-muted"}`}>
+                  <span className={`text-xs font-y2k font-extrabold ${isToday ? "w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-xs" : "text-slate-500"}`}>
                     {day}
                   </span>
                   {onSelectPost && (

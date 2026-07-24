@@ -93,37 +93,36 @@ export default function InstagramDashboard({ onSelectPost }) {
   
   if (!hasConnectedAccount) {
     return (
-      <div className="p-6 lg:p-12 max-w-[1200px] mx-auto space-y-8 animate-fade-in">
-        <div className="rounded-[3rem] grad-primary p-8 lg:p-12 overflow-hidden relative shadow-[0_30px_90px_-40px_rgba(10,37,64,0.75)]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(236,72,153,0.15),transparent_40%),linear-gradient(180deg,transparent,rgba(255,255,255,0.02))]" />
+      <div className="min-h-screen bg-desk-canvas p-6 lg:p-12 max-w-[1200px] mx-auto space-y-8 animate-fade-in font-sans text-[#1E2330]">
+        <div className="paper-sheet-binder p-8 lg:p-12 overflow-hidden relative shadow-2xl border-2 border-[#E3DCCF]">
+          <div className="absolute top-0 left-0 right-0 h-6 paper-binder-holes opacity-70" />
           
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="space-y-6 max-w-2xl text-left">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-pink-300">
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 mt-2">
+            <div className="space-y-5 max-w-2xl text-left">
+              <div className="sticker-highlight-pink inline-flex items-center gap-2 px-4 py-1.5 text-xs">
                 <Instagram className="h-4 w-4" />
                 Instagram Connection Required
               </div>
-              <h1 className="text-4xl lg:text-5xl font-black tracking-[-0.04em] leading-tight text-white">
+              <h1 className="text-3xl lg:text-5xl font-y2k font-extrabold tracking-tight text-[#1E2330] leading-tight">
                 Unlock Real-Time Instagram Reach & Analytics
               </h1>
-              <p className="text-sm lg:text-base text-slate-300 leading-relaxed font-medium">
+              <p className="text-xs lg:text-sm text-slate-600 leading-relaxed font-medium">
                 Connect your Instagram Business or Creator account to start tracking reach, impressions, saves, shares, and engagement rates directly. Ground your content strategy in real data.
               </p>
               
               <div className="flex flex-wrap gap-4 pt-2">
                 <a
                   href="/api/meta/connect"
-                  className="rounded-2xl bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-bold text-sm px-6 py-4 shadow-lg hover:from-pink-600 hover:to-indigo-700 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2 cursor-pointer"
+                  className="blue-label-tag font-bold text-xs px-6 py-4 shadow-lg hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
                 >
                   Connect Instagram via Meta
-                  <ArrowUpRight className="w-4 h-4" />
+                  <ArrowUpRight className="w-4 h-4 text-yellow-300" />
                 </a>
               </div>
             </div>
 
-            <div className="relative flex h-48 w-48 items-center justify-center rounded-[2.5rem] border border-white/10 bg-white/5 backdrop-blur-md shrink-0 shadow-inner">
-              <Instagram className="h-24 w-24 text-pink-400 animate-pulse" />
-              <div className="absolute inset-2 rounded-[2.2rem] border border-white/5 pointer-events-none" />
+            <div className="lanyard-badge-card p-8 flex items-center justify-center shrink-0 shadow-2xl bg-white border-2 border-[#E3DCCF] transform rotate-3 hover:rotate-0 transition-transform">
+              <Instagram className="h-20 w-20 text-pink-500 animate-pulse" />
             </div>
           </div>
         </div>

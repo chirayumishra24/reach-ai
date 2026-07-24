@@ -34,27 +34,27 @@ export default function Analytics() {
   }));
 
   return (
-    <div className="p-6 lg:p-10 max-w-6xl mx-auto space-y-8 animate-fade-in">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-6">
+    <div className="min-h-screen bg-desk-canvas p-6 lg:p-10 max-w-6xl mx-auto space-y-8 animate-fade-in font-sans text-[#1E2330]">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-2 border-[#E3DCCF] pb-4">
         <div>
-          <h3 className="text-2xl font-bold text-txt tracking-tight flex items-center gap-2">
-            <BarChartIcon className="w-6 h-6 text-primary" strokeWidth={2.5} /> Executive Intelligence
+          <h3 className="text-2xl font-y2k font-extrabold text-[#1E2330] tracking-tight flex items-center gap-2">
+            <BarChartIcon className="w-6 h-6 text-blue-600" strokeWidth={2.5} /> Executive Intelligence
           </h3>
-          <p className="text-sm text-txt-muted font-medium">Measuring impact and pipeline health across the educational ecosystem.</p>
+          <p className="text-xs text-slate-600 font-medium">Measuring impact and pipeline health across the educational ecosystem.</p>
         </div>
-        <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-2xl">
+        <div className="flex items-center gap-2 bg-[#FAF8F3] p-1.5 rounded-xl border border-[#E3DCCF]">
           <button
             onClick={() => setActiveTab("pipeline")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              activeTab === "pipeline" ? "bg-white text-txt shadow-sm" : "text-txt-muted hover:text-txt"
+            className={`px-4 py-2 rounded-lg text-xs font-y2k font-extrabold transition-all cursor-pointer ${
+              activeTab === "pipeline" ? "blue-label-tag text-white shadow-xs" : "text-slate-600 hover:text-[#1E2330]"
             }`}
           >
             Pipeline Velocity
           </button>
           <button
             onClick={() => setActiveTab("meta")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              activeTab === "meta" ? "bg-white text-txt shadow-sm" : "text-txt-muted hover:text-txt"
+            className={`px-4 py-2 rounded-lg text-xs font-y2k font-extrabold transition-all cursor-pointer ${
+              activeTab === "meta" ? "blue-label-tag text-white shadow-xs" : "text-slate-600 hover:text-[#1E2330]"
             }`}
           >
             Meta Insights

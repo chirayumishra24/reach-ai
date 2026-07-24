@@ -113,6 +113,7 @@ export default function ContentStudio({ researchContext, onSchedulePost }) {
 
   return (
     <div className="min-h-screen bg-desk-canvas p-6 lg:p-10 max-w-7xl mx-auto space-y-8 animate-fade-in font-sans text-[#1E2330]">
+      {/* Top Banner Header */}
       <div className="border-b-2 border-[#E3DCCF] pb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md transform -rotate-2">
@@ -130,271 +131,235 @@ export default function ContentStudio({ researchContext, onSchedulePost }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Config */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="paper-sheet-binder p-6 space-y-6 shadow-xl border-2 border-[#E3DCCF] relative">
-            <div className="absolute top-0 left-0 right-0 h-4 paper-binder-holes opacity-60" />
-            <div className="space-y-4 pt-1">
-              <Field label={researchContext?.keyword ? "Topic (From R&D)" : "Topic"}>
-                <div className="relative">
-                  <input type="text" value={keyword} onChange={(e) => setKeyword(e.target.value)}
-                    placeholder="Enter main subject..."
-                    className="w-full px-4 py-2.5 rounded-xl border border-[#E3DCCF] bg-[#FAF8F3] text-sm font-y2k font-bold text-[#1E2330] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600" />
-                  {researchContext?.keyword && <Sparkles className="absolute right-3 top-3 w-4 h-4 text-blue-600 opacity-60" />}
-                </div>
-              </Field>
+      {/* Horizontal Wide Configuration Card */}
+      <div className="w-full paper-sheet-binder p-6 lg:p-8 shadow-xl space-y-6 border-2 border-[#E3DCCF] relative">
+        <div className="absolute top-0 left-0 right-0 h-5 paper-binder-holes opacity-60" />
 
-              <div className="grid grid-cols-2 gap-4">
-                <Field label="Format">
-                  <select value={format} onChange={(e) => setFormat(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-bg-elevated border border-border text-sm text-txt cursor-pointer focus:ring-2 focus:ring-primary/20 transition-all outline-none">
-                    {FORMATS.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
-                  </select>
-                </Field>
-                <Field label="Tone">
-                  <select value={style} onChange={(e) => setStyle(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-bg-elevated border border-border text-sm text-txt cursor-pointer focus:ring-2 focus:ring-primary/20 transition-all outline-none">
-                    {STYLES.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </Field>
+        <div className="space-y-6 mt-1">
+          {/* Row 1: Topic Input and Generate Action Buttons */}
+          <div className="flex flex-col md:flex-row items-end gap-4">
+            <div className="flex-1 w-full">
+              <label className="block text-xs font-y2k font-extrabold uppercase tracking-widest text-slate-600 mb-2">
+                {researchContext?.keyword ? "Topic (Loaded From R&D)" : "Topic / Keyword"}
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                  placeholder="Enter main subject or angle..."
+                  className="w-full pl-4 pr-10 py-3 rounded-xl border border-[#E3DCCF] bg-[#FAF8F3] text-sm font-y2k font-extrabold text-[#1E2330] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                />
+                {researchContext?.keyword && <Sparkles className="absolute right-3 top-3 w-4 h-4 text-blue-600 opacity-70" />}
               </div>
-
-              <Field label="Target Audience">
-                <input type="text" value={audience} onChange={(e) => setAudience(e.target.value)} placeholder="e.g. Parents of middle-schoolers"
-                  className="w-full px-4 py-3 rounded-xl bg-bg-elevated border border-border text-sm text-txt placeholder:text-txt-muted focus:ring-2 focus:ring-primary/20 transition-all outline-none" />
-              </Field>
             </div>
 
-            <div className="space-y-3">
-              <button onClick={() => handleGenerate(false)} disabled={loading || !keyword.trim()}
-                className={`w-full py-4 rounded-2xl text-sm font-bold transition-all flex items-center justify-center gap-3 ${loading ? "bg-primary/20 text-primary-hover cursor-wait" : "grad-primary text-white cursor-pointer shadow-xl shadow-primary/20 hover:scale-[0.98] active:scale-95"}`}>
-                {loading && !bundleResult ? <><Loader2 className="w-5 h-5 animate-spin" /> Generating...</> : <><Sparkles className="w-5 h-5" /> Generate Script</>}
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <button
+                onClick={() => handleGenerate(false)}
+                disabled={loading || !keyword.trim()}
+                className={`blue-label-tag px-6 py-3.5 text-xs font-y2k font-extrabold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md ${
+                  loading ? "opacity-75 cursor-wait" : "hover:scale-105 active:scale-95"
+                }`}
+              >
+                {loading && !bundleResult ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-yellow-300" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 text-yellow-300" />
+                    Generate Script
+                  </>
+                )}
               </button>
 
               {researchContext?.research && (
-                <button onClick={() => handleGenerate(true)} disabled={loading || !keyword.trim()}
-                  className={`w-full py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] transition-all flex items-center justify-center gap-3 border-2 ${loading && bundleResult ? "bg-accent/20 text-accent-hover cursor-wait border-accent/30" : "bg-bg-card border-accent/20 text-accent-hover hover:bg-accent/5 hover:border-accent/40 shadow-lg shadow-accent/5"}`}>
-                  {loading && bundleResult ? <><Loader2 className="w-4 h-4 animate-spin" /> Bundling...</> : <><Wand2 className="w-4 h-4" /> Generate Bundle</>}
+                <button
+                  onClick={() => handleGenerate(true)}
+                  disabled={loading || !keyword.trim()}
+                  className="sticker-highlight-pink px-5 py-3.5 text-xs font-y2k font-extrabold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md hover:scale-105 active:scale-95"
+                >
+                  {loading && bundleResult ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-white" />
+                      Bundling...
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="w-4 h-4 text-white" />
+                      Generate Bundle
+                    </>
+                  )}
                 </button>
               )}
             </div>
           </div>
 
+          {/* Row 2: 3 Horizontal Controls (Format, Tone, Target Audience) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+            {/* Format Card */}
+            <div className="p-4 rounded-xl bg-[#FAF8F3] border border-[#E3DCCF] space-y-2">
+              <label className="block text-[10px] font-y2k font-extrabold uppercase tracking-widest text-slate-500">
+                Content Format
+              </label>
+              <select
+                value={format}
+                onChange={(e) => setFormat(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg bg-white border border-[#E3DCCF] text-xs font-y2k font-extrabold text-[#1E2330] cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600"
+              >
+                {FORMATS.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.label} ({f.desc})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Tone Card */}
+            <div className="p-4 rounded-xl bg-[#FAF8F3] border border-[#E3DCCF] space-y-2">
+              <label className="block text-[10px] font-y2k font-extrabold uppercase tracking-widest text-slate-500">
+                Voice &amp; Tone
+              </label>
+              <select
+                value={style}
+                onChange={(e) => setStyle(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg bg-white border border-[#E3DCCF] text-xs font-y2k font-extrabold text-[#1E2330] cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600 capitalize"
+              >
+                {STYLES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Target Audience Card */}
+            <div className="p-4 rounded-xl bg-[#FAF8F3] border border-[#E3DCCF] space-y-2">
+              <label className="block text-[10px] font-y2k font-extrabold uppercase tracking-widest text-slate-500">
+                Target Audience
+              </label>
+              <input
+                type="text"
+                value={audience}
+                onChange={(e) => setAudience(e.target.value)}
+                placeholder="e.g. Students, Parents, Educators"
+                className="w-full px-3 py-2 rounded-lg bg-white border border-[#E3DCCF] text-xs font-y2k font-extrabold text-[#1E2330] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600"
+              />
+            </div>
+          </div>
+
+          {/* Research Context Post-It Strip */}
           {researchContext?.research && (
-            <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10 space-y-4">
-              <h4 className="text-[10px] font-black text-primary-hover uppercase tracking-widest flex items-center gap-2">
-                <Globe className="w-3.5 h-3.5" /> Research Context Loaded
-              </h4>
-              <p className="text-xs font-bold text-txt leading-relaxed">{researchContext.keyword}</p>
-              <div className="flex flex-wrap gap-2">
-                {researchContext.research?.recommendedStrategy?.bestFormat && (
-                  <span className="text-[9px] font-black text-primary px-2.5 py-1 rounded-lg bg-white/60 border border-primary/10 shadow-sm">
-                    {researchContext.research.recommendedStrategy.bestFormat}
-                  </span>
-                )}
-                {researchContext.research?.viralCheck?.score !== undefined && (
-                  <span className="text-[9px] font-black text-orange-600 px-2.5 py-1 rounded-lg bg-white/60 border border-orange-200 shadow-sm">
-                    Viral {researchContext.research.viralCheck.score}
-                  </span>
-                )}
-                {!!researchContext.research?.trendSignals?.length && (
-                  <span className="text-[9px] font-black text-accent-hover px-2.5 py-1 rounded-lg bg-white/60 border border-accent/10 shadow-sm">
-                    {researchContext.research.trendSignals.length} trend signals
-                  </span>
-                )}
+            <div className="post-it-yellow p-4 rounded-xl relative flex flex-wrap items-center justify-between gap-4 border border-yellow-400">
+              <div className="tape-overlay" />
+              <div className="flex items-center gap-3">
+                <Globe className="w-4 h-4 text-blue-700 shrink-0" />
+                <div>
+                  <p className="text-[10px] font-y2k font-extrabold text-slate-800 uppercase tracking-widest">R&amp;D Research Loaded</p>
+                  <p className="text-xs font-handwriting text-slate-900 font-bold">{researchContext.keyword}</p>
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2 pt-2 border-t border-primary/10">
-                {researchContext.topKeywords?.slice(0, 5).map((kw, i) => (
-                  <span key={i} className="text-[9px] font-bold text-primary px-2.5 py-1 rounded-lg bg-white/50 border border-primary/10 shadow-sm">#{kw.keyword || kw}</span>
+              <div className="flex flex-wrap gap-2">
+                {researchContext.topKeywords?.slice(0, 4).map((kw, i) => (
+                  <span key={i} className="text-[9px] font-y2k font-bold text-blue-800 px-2 py-0.5 rounded bg-white/70 border border-blue-200">
+                    #{kw.keyword || kw}
+                  </span>
                 ))}
               </div>
             </div>
           )}
         </div>
+      </div>
 
-        {/* Output */}
-        <div className="lg:col-span-8">
-          {error && (
-            <div className="p-4 mb-6 rounded-xl bg-danger/5 border border-danger/10 text-danger text-sm font-bold flex items-center gap-3">
-              <X className="w-4 h-4" /> {error}
+      {/* Main Full-Width Script Output Panel */}
+      <div className="w-full">
+        {error && (
+          <div className="p-4 mb-6 rounded-xl sticker-highlight-orange text-white text-xs font-y2k font-extrabold">
+            {error}
+          </div>
+        )}
+
+        {!result && !loading && (
+          <div className="w-full paper-sheet p-16 text-center border-2 border-dashed border-[#E3DCCF] shadow-lg flex flex-col items-center justify-center">
+            <div className="w-16 h-16 rounded-2xl bg-yellow-300 border border-yellow-400 text-slate-900 flex items-center justify-center mx-auto mb-4 shadow-sm transform -rotate-3">
+              <PenTool className="w-8 h-8 text-blue-700" />
             </div>
-          )}
+            <h3 className="text-xl font-y2k font-extrabold text-[#1E2330] mb-2 tracking-tight">
+              Script Workspace
+            </h3>
+            <p className="text-xs text-slate-600 max-w-md mx-auto font-medium leading-relaxed">
+              Configure your topic, format, and tone above, then click &ldquo;Generate Script&rdquo; to draft output.
+            </p>
+          </div>
+        )}
 
-          {!result && !loading && (
-            <div className="h-full min-h-[500px] flex flex-col items-center justify-center text-center p-12 border border-border border-dashed rounded-[2.5rem] bg-bg-elevated/10">
-              <div className="w-24 h-24 rounded-3xl bg-bg-card border border-border flex items-center justify-center text-txt-muted mx-auto mb-8 shadow-sm ring-8 ring-bg-elevated/30"><PenTool className="w-12 h-12" /></div>
-              <h3 className="text-2xl font-bold text-txt mb-3 tracking-tight">Script Workspace</h3>
-              <p className="text-sm text-txt-muted max-w-sm mx-auto font-medium leading-relaxed">Configure your topic and format, then generate a polished script.</p>
+        {loading && (
+          <div className="w-full paper-sheet p-16 text-center border-2 border-dashed border-[#E3DCCF] shadow-lg flex flex-col items-center justify-center animate-pulse">
+            <div className="w-16 h-16 rounded-full bg-blue-100 border border-blue-200 text-blue-600 flex items-center justify-center mx-auto mb-4 animate-bounce">
+              <Bot className="w-8 h-8" />
             </div>
-          )}
+            <h3 className="text-xl font-y2k font-extrabold text-[#1E2330] mb-4">Writing Script...</h3>
+            <div className="w-48 h-2 rounded-full bg-slate-200 overflow-hidden mx-auto">
+              <div className="h-full bg-blue-600 w-1/2 animate-pulse" />
+            </div>
+          </div>
+        )}
 
-          {loading && (
-            <div className="h-full min-h-[500px] flex flex-col items-center justify-center text-center p-12 border border-border border-dashed rounded-[2.5rem] bg-bg-elevated/10 animate-pulse">
-              <div className="w-24 h-24 rounded-3xl bg-primary/5 flex items-center justify-center text-primary mx-auto mb-8 ring-8 ring-primary/5"><Bot className="w-12 h-12" /></div>
-              <h3 className="text-2xl font-bold text-txt mb-6 tracking-tight">Writing Script...</h3>
-              <div className="space-y-4 w-72 mx-auto">
-                <div className="h-3 rounded-full bg-bg-elevated overflow-hidden"><div className="h-full bg-primary w-1/3 animate-progress" /></div>
-                <div className="flex justify-between items-center px-1">
-                  <p className="text-[10px] font-black text-primary-hover uppercase tracking-widest">Writing</p>
-                  <p className="text-[10px] font-black text-txt-muted uppercase tracking-widest">•</p>
-                  <p className="text-[10px] font-black text-primary-hover uppercase tracking-widest">Optimizing</p>
-                </div>
+        {result && (
+          <div className="w-full paper-sheet p-8 shadow-xl space-y-6 border-2 border-[#E3DCCF]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E3DCCF] pb-4">
+              <div className="flex items-center gap-3">
+                <span className="blue-label-tag px-3 py-1 text-[10px]">
+                  {FORMATS.find((f) => f.id === format)?.label || format}
+                </span>
+                <span className="sticker-highlight-green px-3 py-1 text-[10px]">
+                  {style}
+                </span>
               </div>
-            </div>
-          )}
-
-          {result && (
-            <div className="space-y-6 animate-fade-in">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex flex-col gap-3">
-                  <div className="flex p-1.5 rounded-2xl bg-bg-card border border-border shadow-sm overflow-x-auto custom-scroll no-scrollbar">
-                    {[
-                      { id: "script", l: "Script", icon: FileText },
-                      { id: "seo", l: "SEO & Tags", icon: Tag },
-                      { id: "editing", l: "Audit", icon: Edit3 }
-                    ].map((t) => (
-                      <button key={t.id} onClick={() => setTab(t.id)}
-                        className={`px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider cursor-pointer transition-all flex items-center gap-2.5 whitespace-nowrap ${tab === t.id ? "bg-primary text-white shadow-md shadow-primary/20" : "text-txt-muted hover:text-txt"}`}>
-                        <t.icon className="w-4 h-4" /> {t.l}
-                      </button>
-                    ))}
-                  </div>
-
-                  {bundleResult && (
-                    <div className="flex gap-2 items-center px-2">
-                      <span className="text-[9px] font-black text-txt-muted uppercase tracking-widest mr-2">Format:</span>
-                      {Object.keys(bundleResult).map((f) => (
-                        <button key={f} onClick={() => { setFormat(f); setResult(prev => ({ ...prev, script: bundleResult[f] })); }}
-                          className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-tighter border transition-all ${format === f ? "bg-accent/10 border-accent/20 text-accent-hover" : "bg-bg-card border-border text-txt-muted hover:text-txt"}`}>
-                          {FORMATS.find(x => x.id === f)?.label || f}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex gap-2 self-start pt-1">
-                  <button onClick={() => navigator.clipboard.writeText(result.script || "")}
-                    className="p-3 rounded-xl bg-bg-card border border-border text-txt-muted hover:text-txt transition-all cursor-pointer shadow-sm hover:border-primary/20"><Copy className="w-4.5 h-4.5" /></button>
-                  <button onClick={handleSave} disabled={isSaved}
-                    className={`px-8 py-3 rounded-2xl text-[11px] font-bold flex items-center gap-2.5 transition-all cursor-pointer shadow-xl ${isSaved ? "bg-success/10 text-success border border-success/20" : "bg-bg-card border border-border text-txt hover:bg-bg-elevated hover:border-primary/30"}`}>
-                    {isSaved ? <><CheckCircle2 className="w-4.5 h-4.5" /> Saved to Calendar</> : <><Save className="w-4.5 h-4.5" /> Save &amp; Schedule</>}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleSave}
+                  className={`px-4 py-2 rounded-xl text-xs font-y2k font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
+                    isSaved
+                      ? "sticker-highlight-green text-slate-900"
+                      : "bg-white border-[#E3DCCF] text-slate-700 hover:bg-[#EFEADF]"
+                  }`}
+                >
+                  {isSaved ? <CheckCircle2 className="w-4 h-4 text-slate-900" /> : <Save className="w-4 h-4" />}
+                  {isSaved ? "Saved to Pipeline" : "Save Script"}
+                </button>
+                {onSchedulePost && (
+                  <button
+                    onClick={() => onSchedulePost({ keyword, format, script: result.script })}
+                    className="blue-label-tag px-4 py-2 text-xs font-bold flex items-center gap-1.5 hover:scale-105 transition-all cursor-pointer shadow-md"
+                  >
+                    <Sparkles className="w-4 h-4 text-yellow-300" /> Schedule Post
                   </button>
-                  {onSchedulePost && (
-                    <button onClick={() => onSchedulePost(result.script)}
-                      className="px-6 py-3 rounded-2xl text-[11px] font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-white flex items-center gap-2 hover:opacity-90 transition-all cursor-pointer shadow-xl">
-                      <Sparkles className="w-4.5 h-4.5" /> Compose on Meta
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <div className="rounded-[2.5rem] bg-bg-card border border-border shadow-sm overflow-hidden min-h-[600px] flex flex-col">
-                {tab === "script" && (
-                  <div className="p-10 flex-1 relative">
-                    <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none"><PenTool className="w-32 h-32" /></div>
-                    <pre className="text-[15px] text-txt-secondary leading-loose whitespace-pre-wrap font-sans custom-scroll max-h-[700px] overflow-y-auto pr-6 selection:bg-primary/10">
-                      {result.script}
-                    </pre>
-                  </div>
-                )}
-
-                {tab === "seo" && (
-                  <div className="p-10 space-y-10">
-                    <div className="space-y-6">
-                      <h4 className="text-[11px] font-black text-txt uppercase tracking-[0.2em] border-b border-border pb-3 flex items-center gap-2">
-                        <MonitorPlay className="w-4 h-4 text-primary" /> High-CTR Hooks
-                      </h4>
-                      <div className="grid grid-cols-1 gap-4">
-                        {result.seo?.titles?.map((t, i) => (
-                          <div key={i} className="p-6 rounded-[1.5rem] bg-bg-elevated/50 border border-border flex items-center justify-between group hover:border-primary/20 hover:bg-bg-card transition-all">
-                            <div className="max-w-[80%]"><p className="text-[15px] font-bold text-txt">{t.title}</p><p className="text-[11px] text-txt-muted mt-2 font-medium">{t.strategy}</p></div>
-                            <div className="text-right">
-                              <span className="text-lg font-black text-primary block group-hover:scale-110 transition-transform">{t.ctrScore}%</span>
-                              <p className="text-[9px] font-black text-txt-muted uppercase tracking-tighter">Est. CTR</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="space-y-6">
-                      <div className="flex items-center justify-between border-b border-border pb-3">
-                        <h4 className="text-[11px] font-black text-txt uppercase tracking-[0.2em] flex items-center gap-2">
-                          <Hash className="w-4 h-4 text-accent" /> Tags
-                        </h4>
-                        <button
-                          onClick={() => { const tags = [...(result.seo?.tags?.primary || []), ...(result.seo?.tags?.secondary || [])].map(t => t.tag || t).join(' '); navigator.clipboard.writeText(tags); }}
-                          className="text-[9px] font-black text-primary uppercase tracking-widest hover:underline cursor-pointer">Copy All</button>
-                      </div>
-                      <div className="flex flex-wrap gap-2.5">
-                        {result.seo?.tags?.primary?.map((tag, i) => (
-                          <span key={i} className="px-4 py-2 rounded-xl text-xs font-bold bg-primary/5 text-primary-hover border border-primary/20 flex items-center gap-2 hover:bg-primary/10 transition-colors shadow-sm">{tag.tag || tag} <Flame className="w-3.5 h-3.5 text-orange-500" /></span>
-                        ))}
-                        {result.seo?.tags?.secondary?.map((tag, i) => (
-                          <span key={i} className="px-4 py-2 rounded-xl text-xs font-bold bg-bg-elevated border border-border text-txt-secondary hover:bg-bg-card transition-colors">{tag.tag || tag}</span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {tab === "editing" && (
-                  <div className="p-10 space-y-10">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                      {[["Hook", result.editing?.hookScore], ["Platform", result.editing?.platformFit], ["Format", result.editing?.contentTypeMatch], ["Overall", result.editing?.overallScore]].map(([l, v]) => (
-                        <div key={l} className="p-6 rounded-[2rem] bg-bg-elevated/50 border border-border text-center group hover:bg-bg-card transition-all">
-                          <p className={`text-4xl font-black transition-transform group-hover:scale-110 ${v >= 80 ? "text-success" : v >= 60 ? "text-warning" : "text-danger"}`}>{v || "—"}</p>
-                          <p className="text-[10px] font-black text-txt-muted uppercase tracking-[0.15em] mt-3">{l}</p>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {[
-                        ["CTA", result.editing?.ctaStrength],
-                        ["Readability", result.editing?.readabilityScore],
-                        ["Viral Ready", result.editing?.viralReadiness],
-                      ].map(([label, value]) => (
-                        <div key={label} className="p-5 rounded-[1.5rem] bg-bg-elevated/30 border border-border/60">
-                          <p className="text-[10px] font-black text-txt-muted uppercase tracking-[0.15em]">{label}</p>
-                          <p className={`text-2xl font-black mt-3 ${value >= 80 ? "text-success" : value >= 60 ? "text-warning" : "text-danger"}`}>{value || "—"}</p>
-                        </div>
-                      ))}
-                    </div>
-                    {!!result.editing?.optimizationSummary?.length && (
-                      <div className="space-y-4">
-                        <h4 className="text-[11px] font-black text-txt uppercase tracking-[0.2em] border-b border-border pb-3">Optimization Summary</h4>
-                        <div className="grid grid-cols-1 gap-4">
-                          {result.editing.optimizationSummary.map((item, index) => (
-                            <div key={`${item}-${index}`} className="p-5 rounded-2xl bg-primary/5 border border-primary/10 text-sm text-txt-secondary leading-relaxed font-medium">
-                              {item}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    <div className="space-y-6">
-                      <h4 className="text-[11px] font-black text-txt uppercase tracking-[0.2em] border-b border-border pb-3">AI Editorial Audit</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {result.editing?.changes?.map((c, i) => (
-                          <div key={i} className="flex gap-5 p-6 rounded-2xl bg-bg-elevated/30 border border-border/50 items-start hover:border-primary/10 hover:bg-bg-card transition-all">
-                            <span className="px-2.5 py-1.5 rounded-xl text-[10px] font-black bg-primary/10 text-primary-hover uppercase tracking-tighter shrink-0">{c.type}</span>
-                            <p className="text-sm text-txt-secondary leading-relaxed font-medium">{c.description}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
                 )}
               </div>
             </div>
-          )}
-        </div>
+
+            <div className="space-y-4">
+              <div className="p-6 rounded-xl bg-[#FAF8F3] border border-[#E3DCCF] font-sans text-sm text-[#1E2330] leading-relaxed whitespace-pre-wrap">
+                {result.script}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
 function Field({ label, children }) {
-  return (<div><label className="block text-[10px] font-black text-txt-muted uppercase tracking-[0.15em] mb-3 ml-1">{label}</label>{children}</div>);
+  return (
+    <div className="space-y-1">
+      <label className="block text-[10px] font-y2k font-extrabold uppercase tracking-widest text-slate-500">
+        {label}
+      </label>
+      {children}
+    </div>
+  );
 }
