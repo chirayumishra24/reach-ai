@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { MonitorPlay, Smartphone, Clapperboard, Layers, Hash, Briefcase, BookOpen, PenTool, Sparkles, Bot, Tag, Edit3, Loader2, Copy, FileText, Globe, Flame, Wand2, X, Save, CheckCircle2, Volume2, VolumeX, Layers3, ArrowLeft, ArrowRight } from "lucide-react";
+import { MonitorPlay, Smartphone, Clapperboard, Layers, Hash, Briefcase, BookOpen, PenTool, Sparkles, Bot, Tag, Edit3, Loader2, Copy, FileText, Globe, Flame, Wand2, X, Save, CheckCircle2, Volume2, VolumeX, Layers3, Video, Film, Camera } from "lucide-react";
 import { saveContent } from "@/lib/storage";
 
 const FORMATS = [
@@ -28,7 +28,7 @@ export default function ContentStudio({ researchContext, onSchedulePost }) {
   const [error, setError] = useState(null);
   const [isSaved, setIsSaved] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const [viewMode, setViewMode] = useState("script"); // "script" or "carousel"
+  const [viewMode, setViewMode] = useState("script"); // "script", "carousel", or "storyboard"
   const [performanceData, setPerformanceData] = useState([]);
 
   useEffect(() => {
@@ -134,7 +134,7 @@ export default function ContentStudio({ researchContext, onSchedulePost }) {
     }
   };
 
-  // Helper to parse carousel slides from script text
+  // Parse carousel slides
   const parseCarouselSlides = (scriptText) => {
     if (!scriptText) return [];
     const lines = scriptText.split("\n").filter(l => l.trim().length > 0);
@@ -154,7 +154,27 @@ export default function ContentStudio({ researchContext, onSchedulePost }) {
     return slides.length > 0 ? slides : [{ title: "Slide 1", content: [scriptText] }];
   };
 
+  // Parse Video Storyboard Scenes
+  const parseVideoStoryboard = (scriptText) => {
+    if (!scriptText) return [];
+    const paragraphs = scriptText.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+    return paragraphs.map((para, index) => {
+      const visualMatch = para.match(/\[Visual:(.*?)\]/i) || para.match(/Visual:(.*?)(?=\n|$)/i);
+      const audioText = para.replace(/\[Visual:.*?\]/gi, "").trim();
+      const duration = index === 0 ? "0-5s (Hook)" : `${index * 5}-${(index + 1) * 5}s`;
+      const cameraAngle = index === 0 ? "Extreme Close-Up Push In" : index % 2 === 0 ? "Medium Wide Cut" : "Tight Detail Shot";
+      return {
+        sceneNumber: index + 1,
+        duration,
+        cameraAngle,
+        visualPrompt: visualMatch ? visualMatch[1].trim() : `Visual scene depiction for: ${audioText.substring(0, 40)}...`,
+        voiceoverText: audioText || para,
+      };
+    });
+  };
+
   const carouselSlides = result ? parseCarouselSlides(result.script) : [];
+  const storyboardScenes = result ? parseVideoStoryboard(result.script) : [];
 
   return (
     <div className="min-h-screen bg-desk-canvas p-6 lg:p-10 max-w-7xl mx-auto space-y-8 animate-fade-in font-sans text-[#1E2330]">
@@ -291,27 +311,6 @@ export default function ContentStudio({ researchContext, onSchedulePost }) {
               />
             </div>
           </div>
-
-          {/* Research Context Post-It Strip */}
-          {researchContext?.research && (
-            <div className="post-it-yellow p-4 rounded-xl relative flex flex-wrap items-center justify-between gap-4 border border-yellow-400">
-              <div className="tape-overlay" />
-              <div className="flex items-center gap-3">
-                <Globe className="w-4 h-4 text-blue-700 shrink-0" />
-                <div>
-                  <p className="text-[10px] font-y2k font-extrabold text-slate-800 uppercase tracking-widest">R&amp;D Research Loaded</p>
-                  <p className="text-xs font-handwriting text-slate-900 font-bold">{researchContext.keyword}</p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {researchContext.topKeywords?.slice(0, 4).map((kw, i) => (
-                  <span key={i} className="text-[9px] font-y2k font-bold text-blue-800 px-2 py-0.5 rounded bg-white/70 border border-blue-200">
-                    #{kw.keyword || kw}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -360,31 +359,40 @@ export default function ContentStudio({ researchContext, onSchedulePost }) {
                   {style}
                 </span>
 
-                {/* View Mode Switcher for Carousel */}
-                {format.includes("carousel") && (
-                  <div className="flex items-center gap-1 bg-[#FAF8F3] p-1 rounded-lg border border-[#E3DCCF]">
-                    <button
-                      onClick={() => setViewMode("script")}
-                      className={`px-3 py-1 text-[10px] font-y2k font-bold rounded cursor-pointer ${
-                        viewMode === "script" ? "blue-label-tag text-white" : "text-slate-600"
-                      }`}
-                    >
-                      Script View
-                    </button>
+                {/* View Mode Selector Tabs */}
+                <div className="flex items-center gap-1 bg-[#FAF8F3] p-1 rounded-lg border border-[#E3DCCF]">
+                  <button
+                    onClick={() => setViewMode("script")}
+                    className={`px-3 py-1 text-[10px] font-y2k font-bold rounded cursor-pointer ${
+                      viewMode === "script" ? "blue-label-tag text-white" : "text-slate-600"
+                    }`}
+                  >
+                    Script
+                  </button>
+                  {format.includes("carousel") && (
                     <button
                       onClick={() => setViewMode("carousel")}
                       className={`px-3 py-1 text-[10px] font-y2k font-bold rounded cursor-pointer ${
                         viewMode === "carousel" ? "blue-label-tag text-white" : "text-slate-600"
                       }`}
                     >
-                      Slide Deck View
+                      Slide Deck
                     </button>
-                  </div>
-                )}
+                  )}
+                  {(format.includes("youtube") || format.includes("reel") || format.includes("short")) && (
+                    <button
+                      onClick={() => setViewMode("storyboard")}
+                      className={`px-3 py-1 text-[10px] font-y2k font-bold rounded cursor-pointer ${
+                        viewMode === "storyboard" ? "blue-label-tag text-white" : "text-slate-600"
+                      }`}
+                    >
+                      Video Storyboard
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="flex items-center gap-2">
-                {/* Voiceover Speech Narration Button */}
                 <button
                   onClick={toggleVoiceover}
                   className={`px-3.5 py-2 rounded-xl text-xs font-y2k font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
@@ -420,8 +428,41 @@ export default function ContentStudio({ researchContext, onSchedulePost }) {
               </div>
             </div>
 
-            {/* Slide Deck View vs Standard Script View */}
-            {viewMode === "carousel" && format.includes("carousel") ? (
+            {/* Video Storyboard View */}
+            {viewMode === "storyboard" && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-[#E3DCCF] pb-2">
+                  <h4 className="text-xs font-y2k font-extrabold text-[#1E2330] uppercase tracking-wider flex items-center gap-2">
+                    <Film className="w-4 h-4 text-blue-600" /> Video Storyboard Scene Breakdown ({storyboardScenes.length} Scenes)
+                  </h4>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {storyboardScenes.map((scene) => (
+                    <div key={scene.sceneNumber} className="p-5 rounded-xl bg-[#FAF8F3] border border-[#E3DCCF] space-y-3 shadow-xs">
+                      <div className="flex items-center justify-between border-b border-[#E3DCCF] pb-2">
+                        <span className="sticker-highlight-green px-2 py-0.5 text-[9px] font-bold">
+                          Scene {scene.sceneNumber} ({scene.duration})
+                        </span>
+                        <span className="text-[10px] font-y2k font-bold text-slate-500 flex items-center gap-1">
+                          <Camera className="w-3 h-3 text-blue-600" /> {scene.cameraAngle}
+                        </span>
+                      </div>
+                      <div className="p-3 rounded-lg bg-white border border-[#E3DCCF]">
+                        <p className="text-[10px] font-y2k font-extrabold text-blue-600 uppercase tracking-widest mb-1">Visual Prompt</p>
+                        <p className="text-xs font-medium text-slate-700 leading-relaxed italic">{scene.visualPrompt}</p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-yellow-100/60 border border-yellow-300">
+                        <p className="text-[10px] font-y2k font-extrabold text-slate-800 uppercase tracking-widest mb-1">Audio / Voiceover</p>
+                        <p className="text-xs font-sans text-slate-900 leading-relaxed">{scene.voiceoverText}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Slide Deck View */}
+            {viewMode === "carousel" && format.includes("carousel") && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-[#E3DCCF] pb-2">
                   <h4 className="text-xs font-y2k font-extrabold text-[#1E2330] uppercase tracking-wider flex items-center gap-2">
@@ -447,7 +488,10 @@ export default function ContentStudio({ researchContext, onSchedulePost }) {
                   ))}
                 </div>
               </div>
-            ) : (
+            )}
+
+            {/* Standard Script View */}
+            {viewMode === "script" && (
               <div className="space-y-4">
                 <div className="p-6 rounded-xl bg-[#FAF8F3] border border-[#E3DCCF] font-sans text-sm text-[#1E2330] leading-relaxed whitespace-pre-wrap">
                   {result.script}

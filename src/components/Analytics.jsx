@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BarChart as BarChartIcon, Search, MousePointerClick, Clapperboard, Rocket, TrendingUp, Users, Clock, Globe, Hash, Eye, ShieldAlert } from "lucide-react";
+import { BarChart as BarChartIcon, Search, MousePointerClick, Clapperboard, Rocket, TrendingUp, Users, Clock, Globe, Hash, Eye, ShieldAlert, Printer } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from "recharts";
 import { useContentHistory, usePerformanceInsights, useResearchHistory, useStats } from "@/lib/storage";
 import MetaDashboard from "./MetaDashboard";
@@ -33,6 +33,46 @@ export default function Analytics() {
     posts: item.posts,
   }));
 
+  const handlePrintMemo = () => {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Executive Intelligence Desk Memo</title>
+          <style>
+            body { font-family: 'Outfit', sans-serif; padding: 40px; background: #FAF8F3; color: #1E2330; }
+            .header { border-bottom: 3px solid #0055FF; padding-bottom: 15px; margin-bottom: 30px; }
+            .title { font-size: 24px; font-weight: 800; color: #0055FF; text-transform: uppercase; }
+            .subtitle { font-size: 12px; color: #666; margin-top: 5px; }
+            .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
+            .metric-card { background: #white; border: 1px solid #E3DCCF; padding: 15px; border-radius: 8px; text-align: center; }
+            .metric-val { font-size: 20px; font-weight: 800; color: #1E2330; }
+            .metric-lbl { font-size: 10px; text-transform: uppercase; color: #666; }
+            .memo-footer { margin-top: 50px; font-size: 10px; color: #888; border-top: 1px solid #E3DCCF; padding-top: 10px; }
+          </style>
+        </head>
+        <body>
+          <div className="header">
+            <div className="title">Executive Intelligence Desk Memo</div>
+            <div className="subtitle">Official Content Performance & Pipeline Report • ${new Date().toLocaleDateString()}</div>
+          </div>
+          <div className="metric-grid">
+            <div className="metric-card"><div className="metric-val">${stats.totalResearch}</div><div className="metric-lbl">R&D Cycles</div></div>
+            <div className="metric-card"><div className="metric-val">${stats.totalClicks || 0}</div><div className="metric-lbl">Tracked Clicks</div></div>
+            <div className="metric-card"><div className="metric-val">${stats.totalViews || 0}</div><div className="metric-lbl">Tracked Views</div></div>
+            <div className="metric-card"><div className="metric-val">${performance.totals.avgCtr || 0}%</div><div className="metric-lbl">Avg CTR</div></div>
+          </div>
+          <p><strong>Pipeline Status:</strong> Approved: ${stats.approved} | Published: ${stats.published} | Pending: ${stats.pendingApproval}</p>
+          <div className="memo-footer">CONFIDENTIAL • Institutional Marketing Intelligence System</div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => printWindow.print(), 500);
+  };
+
   return (
     <div className="min-h-screen bg-desk-canvas p-6 lg:p-10 max-w-6xl mx-auto space-y-8 animate-fade-in font-sans text-[#1E2330]">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-2 border-[#E3DCCF] pb-4">
@@ -42,23 +82,31 @@ export default function Analytics() {
           </h3>
           <p className="text-xs text-slate-600 font-medium">Measuring impact and pipeline health across the educational ecosystem.</p>
         </div>
-        <div className="flex items-center gap-2 bg-[#FAF8F3] p-1.5 rounded-xl border border-[#E3DCCF]">
+        <div className="flex items-center gap-3">
           <button
-            onClick={() => setActiveTab("pipeline")}
-            className={`px-4 py-2 rounded-lg text-xs font-y2k font-extrabold transition-all cursor-pointer ${
-              activeTab === "pipeline" ? "blue-label-tag text-white shadow-xs" : "text-slate-600 hover:text-[#1E2330]"
-            }`}
+            onClick={handlePrintMemo}
+            className="blue-label-tag px-4 py-2 text-xs font-y2k font-extrabold cursor-pointer hover:scale-105 transition-all shadow-xs flex items-center gap-1.5"
           >
-            Pipeline Velocity
+            <Printer className="w-4 h-4 text-yellow-300" /> Print Desk Memo
           </button>
-          <button
-            onClick={() => setActiveTab("meta")}
-            className={`px-4 py-2 rounded-lg text-xs font-y2k font-extrabold transition-all cursor-pointer ${
-              activeTab === "meta" ? "blue-label-tag text-white shadow-xs" : "text-slate-600 hover:text-[#1E2330]"
-            }`}
-          >
-            Meta Insights
-          </button>
+          <div className="flex items-center gap-2 bg-[#FAF8F3] p-1.5 rounded-xl border border-[#E3DCCF]">
+            <button
+              onClick={() => setActiveTab("pipeline")}
+              className={`px-4 py-2 rounded-lg text-xs font-y2k font-extrabold transition-all cursor-pointer ${
+                activeTab === "pipeline" ? "blue-label-tag text-white shadow-xs" : "text-slate-600 hover:text-[#1E2330]"
+              }`}
+            >
+              Pipeline Velocity
+            </button>
+            <button
+              onClick={() => setActiveTab("meta")}
+              className={`px-4 py-2 rounded-lg text-xs font-y2k font-extrabold transition-all cursor-pointer ${
+                activeTab === "meta" ? "blue-label-tag text-white shadow-xs" : "text-slate-600 hover:text-[#1E2330]"
+              }`}
+            >
+              Meta Insights
+            </button>
+          </div>
         </div>
       </div>
 
