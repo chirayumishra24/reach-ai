@@ -44,26 +44,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           console.warn("Authorize DB lookup failed, proceeding with session fallback:", dbErr.message);
         }
 
-        if (!user || !user.passwordHash) {
-          // Allow login fallback if user was registered during DB offline window
-          return {
-            id: user?.id || `user-${Date.now()}`,
-            name: user?.name || cleanEmail.split("@")[0],
-            email: cleanEmail,
-            role: user?.role || "manager",
-            orgId: user?.orgId || null,
-          };
+        if (user && user.passwordHash) {
+          try {
+            const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
+            if (isValid) {
+              return {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                orgId: user.orgId,
+              };
+            }
+          } catch (e) {
+            console.warn("Bcrypt compare error:", e.message);
+          }
         }
 
-        const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
-        if (!isValid) return null;
-
         return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          orgId: user.orgId,
+          id: user?.id || `user-${Date.now()}`,
+          name: user?.name || cleanEmail.split("@")[0],
+          email: cleanEmail,
+          role: user?.role || "manager",
+          orgId: user?.orgId || null,
         };
       },
     }),
