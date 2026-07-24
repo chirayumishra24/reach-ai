@@ -3,9 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Lock, Mail, User, ArrowRight, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Lock, Mail, User, ArrowRight, AlertCircle, CheckCircle2, BrainCircuit } from "lucide-react";
 import { Chrome, Facebook } from "../../../components/InstagramIcon";
-
 import { signIn } from "next-auth/react";
 
 export default function SignupPage() {
@@ -73,47 +72,48 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden bg-slate-950 font-sans">
-      {/* Background visual effects */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-pink-500/10 rounded-full blur-[120px] pointer-events-none" />
-
-      <div className="sm:mx-auto sm:w-full sm:max-w-md z-10 text-center">
-        <h2 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-          Create your account
-        </h2>
-        <p className="mt-2 text-sm text-slate-400">
+    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative bg-desk-canvas font-sans text-[#1E2330]">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md z-10 text-center space-y-3">
+        <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md mx-auto transform -rotate-3">
+          <BrainCircuit className="w-7 h-7" />
+        </div>
+        <div className="blue-label-tag px-4 py-1.5 text-2xl inline-block shadow-md">
+          Create account
+        </div>
+        <p className="mt-1 text-xs font-y2k font-extrabold text-slate-600">
           Already have an account?{" "}
-          <Link href="/login" className="font-semibold text-indigo-400 hover:text-indigo-300 transition-colors">
+          <Link href="/login" className="text-blue-600 hover:underline">
             Sign in instead
           </Link>
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md z-10">
-        <div className="bg-slate-900/60 backdrop-blur-xl py-8 px-4 border border-slate-800/80 shadow-2xl rounded-2xl sm:px-10">
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md z-10 px-4">
+        <div className="paper-sheet py-8 px-6 border-2 border-[#E3DCCF] shadow-2xl rounded-2xl sm:px-10 relative">
+          <div className="tape-overlay" />
+
           {error && (
-            <div className="mb-6 p-4 rounded-xl bg-red-950/40 border border-red-800/50 flex items-start gap-3 text-red-300 text-sm">
-              <AlertCircle className="w-5 h-5 shrink-0 text-red-400" />
+            <div className="mb-6 p-4 rounded-xl sticker-highlight-orange flex items-start gap-3 text-xs font-y2k font-extrabold">
+              <AlertCircle className="w-5 h-5 shrink-0 text-white" />
               <span>{error}</span>
             </div>
           )}
 
           {success && (
-            <div className="mb-6 p-4 rounded-xl bg-emerald-950/40 border border-emerald-800/50 flex items-start gap-3 text-emerald-300 text-sm">
-              <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-400" />
+            <div className="mb-6 p-4 rounded-xl sticker-highlight-green flex items-start gap-3 text-xs font-y2k font-extrabold">
+              <CheckCircle2 className="w-5 h-5 shrink-0 text-[#142800]" />
               <span>Account created successfully! Redirecting...</span>
             </div>
           )}
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="name" className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+              <label htmlFor="name" className="block text-xs font-y2k font-extrabold uppercase tracking-wider text-slate-600">
                 Full Name
               </label>
               <div className="mt-1.5 relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                  <User className="w-5 h-5" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <User className="w-4 h-4" />
                 </div>
                 <input
                   id="name"
@@ -122,19 +122,19 @@ export default function SignupPage() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-slate-800 rounded-xl bg-slate-950/50 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                  className="block w-full pl-9 pr-3 py-2.5 border border-[#E3DCCF] rounded-xl bg-[#FAF8F3] text-[#1E2330] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm font-medium"
                   placeholder="John Doe"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+              <label htmlFor="email" className="block text-xs font-y2k font-extrabold uppercase tracking-wider text-slate-600">
                 Email Address
               </label>
               <div className="mt-1.5 relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                  <Mail className="w-5 h-5" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <Mail className="w-4 h-4" />
                 </div>
                 <input
                   id="email"
@@ -144,19 +144,19 @@ export default function SignupPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-slate-800 rounded-xl bg-slate-950/50 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                  className="block w-full pl-9 pr-3 py-2.5 border border-[#E3DCCF] rounded-xl bg-[#FAF8F3] text-[#1E2330] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm font-medium"
                   placeholder="name@company.com"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+              <label htmlFor="password" className="block text-xs font-y2k font-extrabold uppercase tracking-wider text-slate-600">
                 Password
               </label>
               <div className="mt-1.5 relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                  <Lock className="w-5 h-5" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <Lock className="w-4 h-4" />
                 </div>
                 <input
                   id="password"
@@ -165,19 +165,19 @@ export default function SignupPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-slate-800 rounded-xl bg-slate-950/50 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                  className="block w-full pl-9 pr-3 py-2.5 border border-[#E3DCCF] rounded-xl bg-[#FAF8F3] text-[#1E2330] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm font-medium"
                   placeholder="••••••••"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+              <label htmlFor="confirmPassword" className="block text-xs font-y2k font-extrabold uppercase tracking-wider text-slate-600">
                 Confirm Password
               </label>
               <div className="mt-1.5 relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                  <Lock className="w-5 h-5" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <Lock className="w-4 h-4" />
                 </div>
                 <input
                   id="confirmPassword"
@@ -186,7 +186,7 @@ export default function SignupPage() {
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-slate-800 rounded-xl bg-slate-950/50 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                  className="block w-full pl-9 pr-3 py-2.5 border border-[#E3DCCF] rounded-xl bg-[#FAF8F3] text-[#1E2330] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm font-medium"
                   placeholder="••••••••"
                 />
               </div>
@@ -196,10 +196,10 @@ export default function SignupPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 transition-all cursor-pointer"
+                className="w-full blue-label-tag flex justify-center items-center gap-2 py-3 px-4 text-xs font-y2k font-extrabold shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer"
               >
                 {loading ? "Creating account..." : "Sign up"}
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 text-yellow-300" />
               </button>
             </div>
           </form>
@@ -207,27 +207,27 @@ export default function SignupPage() {
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-800" />
+                <div className="w-full border-t border-[#E3DCCF]" />
               </div>
               <div className="relative flex justify-center text-xs uppercase tracking-wider">
-                <span className="px-3 bg-slate-900 text-slate-500 rounded-full">Or continue with</span>
+                <span className="px-3 bg-white text-slate-500 font-y2k font-extrabold">Or continue with</span>
               </div>
             </div>
 
             <div className="mt-6 grid grid-cols-2 gap-3">
               <button
                 onClick={() => handleOAuthLogin("google")}
-                className="w-full inline-flex justify-center items-center gap-2 py-3 px-4 border border-slate-800 rounded-xl bg-slate-950/30 text-sm font-medium text-slate-300 hover:bg-slate-900 transition-all hover:text-slate-100 cursor-pointer"
+                className="w-full inline-flex justify-center items-center gap-2 py-2.5 px-4 border border-[#E3DCCF] rounded-xl bg-[#FAF8F3] text-xs font-y2k font-bold text-[#1E2330] hover:bg-[#EFEADF] transition-all cursor-pointer shadow-xs"
               >
-                <Chrome className="w-4 h-4 text-red-400" />
+                <Chrome className="w-4 h-4 text-red-500" />
                 Google
               </button>
 
               <button
                 onClick={() => handleOAuthLogin("facebook")}
-                className="w-full inline-flex justify-center items-center gap-2 py-3 px-4 border border-slate-800 rounded-xl bg-slate-950/30 text-sm font-medium text-slate-300 hover:bg-slate-900 transition-all hover:text-slate-100 cursor-pointer"
+                className="w-full inline-flex justify-center items-center gap-2 py-2.5 px-4 border border-[#E3DCCF] rounded-xl bg-[#FAF8F3] text-xs font-y2k font-bold text-[#1E2330] hover:bg-[#EFEADF] transition-all cursor-pointer shadow-xs"
               >
-                <Facebook className="w-4 h-4 text-blue-500" />
+                <Facebook className="w-4 h-4 text-blue-600" />
                 Meta
               </button>
             </div>
