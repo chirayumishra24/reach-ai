@@ -18,8 +18,12 @@ let firestoreDb = null;
 async function getFirestore() {
   if (firestoreDb) return firestoreDb;
   try {
-    const { getApps, getApp, initializeApp, cert } = await import("firebase-admin/app");
-    const { getFirestore: getFs } = await import("firebase-admin/firestore");
+    const adminApp = await import("firebase-admin/app").catch(() => null);
+    const adminFs = await import("firebase-admin/firestore").catch(() => null);
+    if (!adminApp || !adminFs) return null;
+
+    const { getApps, getApp, initializeApp, cert } = adminApp;
+    const { getFirestore: getFs } = adminFs;
 
     const projectId = process.env.FIREBASE_PROJECT_ID;
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
