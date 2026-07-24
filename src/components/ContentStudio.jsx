@@ -112,25 +112,36 @@ export default function ContentStudio({ researchContext, onSchedulePost }) {
   };
 
   return (
-    <div className="p-6 lg:p-10 max-w-7xl mx-auto space-y-8 animate-fade-in">
-      <div className="border-b border-border pb-6">
-        <h3 className="text-2xl font-bold text-txt tracking-tight flex items-center gap-2">
-          <PenTool className="w-6 h-6 text-primary" strokeWidth={2.5} /> Script Studio
-        </h3>
-        <p className="text-sm text-txt-muted font-medium">Generate platform-optimized scripts from verified 2026 research.</p>
+    <div className="min-h-screen bg-desk-canvas p-6 lg:p-10 max-w-7xl mx-auto space-y-8 animate-fade-in font-sans text-[#1E2330]">
+      <div className="border-b-2 border-[#E3DCCF] pb-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md transform -rotate-2">
+            <PenTool className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-2xl font-y2k font-extrabold text-[#1E2330] tracking-tight">
+              Script Studio
+            </h3>
+            <p className="text-xs text-slate-600 font-medium">Generate platform-optimized scripts from verified 2026 research.</p>
+          </div>
+        </div>
+        <div className="sticker-highlight-green px-3.5 py-1 text-xs">
+          Ready to Script
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Config */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="rounded-2xl bg-bg-card border border-border p-6 space-y-6 shadow-sm">
-            <div className="space-y-4">
+          <div className="paper-sheet-binder p-6 space-y-6 shadow-xl border-2 border-[#E3DCCF] relative">
+            <div className="absolute top-0 left-0 right-0 h-4 paper-binder-holes opacity-60" />
+            <div className="space-y-4 pt-1">
               <Field label={researchContext?.keyword ? "Topic (From R&D)" : "Topic"}>
                 <div className="relative">
                   <input type="text" value={keyword} onChange={(e) => setKeyword(e.target.value)}
                     placeholder="Enter main subject..."
-                    className={`w-full px-4 py-3 rounded-xl border text-sm text-txt transition-all ${researchContext?.keyword ? "bg-primary/[0.03] border-primary/20" : "bg-bg-elevated border-border"}`} />
-                  {researchContext?.keyword && <Sparkles className="absolute right-3 top-3 w-4 h-4 text-primary opacity-50" />}
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#E3DCCF] bg-[#FAF8F3] text-sm font-y2k font-bold text-[#1E2330] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600" />
+                  {researchContext?.keyword && <Sparkles className="absolute right-3 top-3 w-4 h-4 text-blue-600 opacity-60" />}
                 </div>
               </Field>
 
