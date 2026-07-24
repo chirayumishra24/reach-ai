@@ -380,18 +380,19 @@ export default function ApprovalBoard({ onPublishPost }) {
 
   if (items.length === 0) {
     return (
-      <div className="p-6 lg:p-10 max-w-[1600px] mx-auto space-y-10 animate-fade-in">
-        <div className="flex flex-col items-center justify-center py-40 text-center bg-bg-card border border-border/50 rounded-[4rem] shadow-inner">
-          <div className="w-28 h-28 rounded-3xl bg-bg-elevated flex items-center justify-center text-txt-muted mx-auto mb-10 shadow-sm ring-[12px] ring-bg-elevated/20 animate-pulse">
-            <FileText className="w-14 h-14" />
+      <div className="min-h-screen bg-desk-canvas p-6 lg:p-10 max-w-[1600px] mx-auto space-y-8 animate-fade-in font-sans text-[#1E2330]">
+        <div className="paper-sheet-binder p-16 text-center border-2 border-[#E3DCCF] shadow-xl flex flex-col items-center justify-center relative">
+          <div className="absolute top-0 left-0 right-0 h-5 paper-binder-holes opacity-60" />
+          <div className="w-20 h-20 rounded-2xl bg-yellow-300 border border-yellow-400 text-slate-900 flex items-center justify-center mx-auto mb-6 shadow-md transform -rotate-3">
+            <FileText className="w-10 h-10 text-blue-700" />
           </div>
-          <h3 className="text-3xl font-black text-txt mb-4 tracking-tight">The board is currently clear</h3>
-          <p className="text-base text-txt-muted max-w-sm mx-auto font-medium leading-relaxed italic opacity-80">
-            "Efficiency is doing things right; effectiveness is doing the right things."
+          <h3 className="text-2xl font-y2k font-extrabold text-[#1E2330] mb-3 tracking-tight">The Board Is Currently Clear</h3>
+          <p className="text-xs text-slate-600 max-w-md mx-auto font-medium leading-relaxed italic">
+            &ldquo;Efficiency is doing things right; effectiveness is doing the right things.&rdquo;
           </p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-10 px-8 py-3.5 rounded-2xl border-2 border-border text-[11px] font-black uppercase tracking-widest text-txt hover:bg-primary/5 hover:border-primary/20 transition-all"
+            className="mt-8 blue-label-tag px-8 py-3 text-xs font-y2k font-extrabold uppercase tracking-wider cursor-pointer hover:scale-105 transition-all shadow-md"
           >
             Refresh Pipeline
           </button>
