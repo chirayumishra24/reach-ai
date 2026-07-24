@@ -62,27 +62,34 @@ export default function Sidebar({ activeTab, onTabChange }) {
   }
 
   return (
-    <aside className="w-[80px] lg:w-[280px] bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 h-screen sticky top-0 z-50 text-slate-300">
-      {/* Branding */}
-      <div className="p-6 pb-8">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-[1.25rem] bg-indigo-600 flex items-center justify-center text-white shadow-xl shadow-indigo-500/20 transition-transform hover:scale-105">
-            <BrainCircuit className="w-7 h-7" />
+    <aside className="w-[80px] lg:w-[280px] bg-[#FAF8F3] border-r-2 border-[#E3DCCF] shadow-xl flex flex-col shrink-0 h-screen sticky top-0 z-50 text-[#1E2330] relative overflow-hidden">
+      {/* Binder Holes Decorative Border on Left Edge */}
+      <div className="absolute left-1.5 top-0 bottom-0 w-3 flex flex-col justify-around py-6 z-20 pointer-events-none">
+        {[...Array(12)].map((_, i) => (
+          <div key={i} className="w-2.5 h-2.5 rounded-full bg-[#D4CDBC] border border-[#BDB4A1] shadow-inner" />
+        ))}
+      </div>
+
+      {/* Header Branding / Blue Tape Label */}
+      <div className="p-5 pb-6 pl-7">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/30 transform -rotate-3 hover:rotate-0 transition-transform">
+            <BrainCircuit className="w-6 h-6" />
           </div>
           <div className="hidden lg:block">
-            <h1 className="text-[18px] font-black text-white tracking-tighter leading-none">
-              Reach<span className="text-indigo-400">.ai</span>
-            </h1>
-            <p className="text-[10px] text-indigo-400 uppercase tracking-[0.2em] font-black mt-2">SaaS SUITE</p>
+            <div className="blue-label-tag px-3 py-1 text-sm inline-block shadow-sm">
+              Reach<span className="text-yellow-300">.ai</span>
+            </div>
+            <p className="text-[10px] font-handwriting text-slate-600 font-bold tracking-wider mt-0.5">Physical Desk Edition</p>
           </div>
         </div>
       </div>
 
-      {/* Navigation */}
-      <div className="flex-1 px-4 space-y-6 overflow-y-auto custom-scroll">
+      {/* Navigation Sticker Tabs */}
+      <div className="flex-1 px-4 pl-7 space-y-5 overflow-y-auto custom-scroll">
         {groups.map((group) => (
           <div key={group.title} className="space-y-1.5">
-            <h3 className="hidden lg:block px-4 text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">
+            <h3 className="hidden lg:block px-3 text-[10px] font-y2k font-extrabold text-[#788094] uppercase tracking-widest mb-1.5">
               {group.title}
             </h3>
             {group.items.map((item) => {
@@ -92,14 +99,17 @@ export default function Sidebar({ activeTab, onTabChange }) {
                 <button
                   key={item.id}
                   onClick={() => onTabChange(item.id)}
-                  className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-[13px] transition-all duration-200 cursor-pointer group relative ${
+                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-y2k transition-all duration-200 cursor-pointer group relative ${
                     isActive
-                      ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20 font-bold"
-                      : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                      ? "bg-[#FFE844] text-[#1E2330] font-extrabold shadow-md transform -rotate-1 border border-[#F0D522]"
+                      : "text-[#565E73] hover:bg-[#EFEADF] hover:text-[#1E2330]"
                   }`}
                 >
-                  <Icon className={`w-4.5 h-4.5 shrink-0 transition-all ${isActive ? "scale-110 text-white" : "group-hover:scale-110 text-slate-400 group-hover:text-white"}`} />
-                  <span className="hidden lg:block truncate tracking-tight font-bold">{item.label}</span>
+                  <Icon className={`w-4 h-4 shrink-0 transition-transform ${isActive ? "scale-110 text-blue-600" : "group-hover:scale-110 text-slate-500"}`} />
+                  <span className="hidden lg:block truncate font-bold tracking-tight">{item.label}</span>
+                  {isActive && (
+                    <span className="hidden lg:block absolute right-2 w-2 h-2 rounded-full bg-blue-600 shadow-sm" />
+                  )}
                 </button>
               );
             })}
@@ -107,30 +117,32 @@ export default function Sidebar({ activeTab, onTabChange }) {
         ))}
       </div>
 
-      {/* User Session & Logout */}
-      <div className="p-4 border-t border-slate-800 space-y-4">
+      {/* User Session & Photo ID Lanyard Card */}
+      <div className="p-4 pl-7 border-t border-[#E3DCCF] space-y-3 bg-[#F2EDE1]">
         {session?.user && (
-          <div className="hidden lg:flex items-center gap-3 px-2">
-            {session.user.image ? (
-              <img src={session.user.image} alt={session.user.name} className="w-9 h-9 rounded-full border border-slate-700" />
-            ) : (
-              <div className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-300">
-                {session.user.name?.[0]?.toUpperCase() || "U"}
-              </div>
-            )}
+          <div className="hidden lg:flex items-center gap-3 p-2 bg-white rounded-xl border border-[#E3DCCF] shadow-sm transform rotate-1">
+            <div className="relative shrink-0">
+              {session.user.image ? (
+                <img src={session.user.image} alt={session.user.name} className="w-8 h-8 rounded-full border border-blue-500 object-cover" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-extrabold text-xs">
+                  {session.user.name?.[0]?.toUpperCase() || "U"}
+                </div>
+              )}
+            </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-black text-white truncate">{session.user.name}</p>
-              <p className="text-[10px] text-slate-500 truncate">{session.user.email}</p>
+              <p className="text-xs font-y2k font-extrabold text-[#1E2330] truncate">{session.user.name}</p>
+              <p className="text-[10px] text-slate-500 truncate font-mono">{session.user.email}</p>
             </div>
           </div>
         )}
 
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-[13px] text-rose-400 hover:bg-rose-950/30 hover:text-rose-300 transition-all cursor-pointer font-bold"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-y2k font-bold text-red-600 hover:bg-red-50 transition-all cursor-pointer"
         >
-          <LogOut className="w-4.5 h-4.5 shrink-0" />
-          <span className="hidden lg:block truncate tracking-tight">Sign Out</span>
+          <LogOut className="w-4 h-4 shrink-0" />
+          <span className="hidden lg:block truncate">Sign Out</span>
         </button>
       </div>
     </aside>

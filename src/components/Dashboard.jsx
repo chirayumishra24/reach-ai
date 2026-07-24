@@ -32,9 +32,9 @@ const FALLBACK_SIGNALS = [
 ];
 
 const STATUS_STYLES = {
-  pending: "bg-warning/10 text-warning border-warning/20",
-  approved: "bg-success/10 text-success border-success/20",
-  published: "bg-primary/10 text-primary border-primary/20",
+  pending: "sticker-highlight-orange",
+  approved: "sticker-highlight-green",
+  published: "blue-label-tag",
 };
 
 export default function Dashboard({ onNavigate, onStartResearch, onGoToStudio }) {
@@ -76,52 +76,46 @@ export default function Dashboard({ onNavigate, onStartResearch, onGoToStudio })
   }, [signalFeed]);
 
   return (
-    <div className="p-6 lg:p-10 xl:p-12 max-w-[1600px] mx-auto space-y-10 animate-fade-in">
+    <div className="min-h-screen bg-desk-canvas p-6 lg:p-10 xl:p-12 max-w-[1600px] mx-auto space-y-10 animate-fade-in font-sans">
       <section className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-        {/* Left Main Hero Banner */}
-        <div className="xl:col-span-8 rounded-[2.5rem] bg-gradient-to-tr from-[#0b1522] via-[#0f2238] to-[#0A2540] border border-[#1A3E5E]/40 p-8 lg:p-10 xl:p-12 overflow-hidden relative shadow-[0_30px_90px_-40px_rgba(10,37,64,0.65)] group">
-          {/* Decorative glowing backdrops */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(184,134,11,0.18),transparent_40%),radial-gradient(circle_at_80%_20%,rgba(59,130,246,0.12),transparent_30%)] pointer-events-none" />
-          <div className="absolute -top-20 right-[-4rem] h-72 w-72 rounded-full bg-white/5 blur-3xl pointer-events-none group-hover:bg-white/10 transition-all duration-700" />
-          <div className="absolute bottom-[-6rem] left-[35%] h-56 w-56 rounded-full bg-accent/5 blur-3xl pointer-events-none" />
+        {/* Left Main Hero Binder Paper */}
+        <div className="xl:col-span-8 paper-sheet-binder p-8 lg:p-10 xl:p-12 overflow-hidden relative shadow-2xl group border-2 border-[#E3DCCF]">
+          {/* Top Perforated Binder Holes */}
+          <div className="absolute top-0 left-0 right-0 h-6 paper-binder-holes opacity-70" />
 
-          {/* Grid pattern overlay */}
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:32px_32px] opacity-40 pointer-events-none" />
-
-          <div className="relative z-10 space-y-10">
+          <div className="relative z-10 space-y-8 mt-2">
             <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-8">
-              <div className="space-y-6 max-w-3xl">
-                <div className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[10px] font-black uppercase tracking-[0.25em] text-white/90 backdrop-blur-md shadow-sm">
-                  <Sparkles className="h-4.5 w-4.5 text-accent animate-pulse" />
-                  Executive Intelligence Hub
+              <div className="space-y-4 max-w-2xl">
+                <div className="blue-label-tag inline-flex items-center gap-2 px-4 py-1.5 text-xs tracking-wide shadow-md transform -rotate-1">
+                  <Sparkles className="h-4 w-4 text-yellow-300 animate-pulse" />
+                  EXECUTIVE DESK HUB
                 </div>
-                <div className="space-y-4">
-                  <h1 className="text-4xl md:text-5xl xl:text-6xl font-black tracking-[-0.05em] leading-[0.96] text-white">
+                <div className="space-y-2">
+                  <h1 className="text-3xl md:text-4xl xl:text-5xl font-y2k font-extrabold tracking-tight text-[#1E2330]">
                     {settings.schoolName}
-                    <span className="block mt-2 bg-gradient-to-r from-slate-200 via-slate-300 to-white/70 bg-clip-text text-transparent text-2xl md:text-3xl font-medium tracking-normal">
+                    <span className="block mt-1 font-handwriting text-2xl md:text-3xl text-blue-600 font-bold">
                       Institutional intelligence, staged for action.
                     </span>
                   </h1>
-                  <p className="max-w-2xl text-xs md:text-sm text-slate-400 leading-relaxed font-medium">
+                  <p className="max-w-xl text-xs md:text-sm text-slate-600 font-medium leading-relaxed">
                     {settings.schoolVision}. The hub displays live research momentum, production pressure, and performance signals so leadership can decide what to publish next.
                   </p>
                 </div>
               </div>
 
-              {/* Mini radar stats widget */}
-              <div className="min-w-[260px] max-w-[290px] rounded-[2rem] border border-white/10 bg-white/5 p-5 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] relative group/radar">
-                <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
+              {/* Mini Post-It Radar Note */}
+              <div className="min-w-[250px] max-w-[280px] post-it-yellow p-5 relative transform rotate-2 shadow-lg hover:rotate-0 transition-transform">
+                <div className="tape-overlay" />
                 <div className="flex items-center justify-between gap-3 relative z-10">
                   <div>
-                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50">Signal Radar</p>
-                    <p className="mt-1.5 text-xs font-bold text-slate-300 leading-tight">Attention is shifting toward clarity and trust.</p>
+                    <p className="text-[10px] font-y2k font-black uppercase tracking-wider text-slate-700">Signal Radar</p>
+                    <p className="mt-1 font-handwriting text-base font-bold text-slate-900 leading-tight">Attention is shifting toward clarity & trust.</p>
                   </div>
-                  <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 group-hover/radar:border-accent/40 transition-colors">
-                    <Radar className="h-5 w-5 text-accent animate-pulse" />
-                    <span className="absolute inset-1 rounded-[1rem] border border-white/5" />
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-yellow-300 border border-yellow-400 text-slate-900 shadow-sm">
+                    <Radar className="h-5 w-5 text-blue-600 animate-pulse" />
                   </div>
                 </div>
-                <div className="mt-5 space-y-2.5 relative z-10">
+                <div className="mt-4 space-y-2 relative z-10">
                   <MiniData label="Open cycles" value={stats.totalResearch} />
                   <MiniData label="Awaiting review" value={stats.pendingApproval} />
                   <MiniData label="Live outputs" value={stats.totalContent} />
@@ -129,13 +123,13 @@ export default function Dashboard({ onNavigate, onStartResearch, onGoToStudio })
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_0.7fr] gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_0.7fr] gap-6 pt-2">
               {/* Animated Live Command Signal Box */}
-              <div className="rounded-[2.25rem] border border-white/10 bg-white/5 p-6 backdrop-blur-md relative overflow-hidden flex flex-col justify-center min-h-[7rem]">
+              <div className="p-5 rounded-2xl bg-[#FAF7F0] border border-[#E5E0D5] shadow-inner relative overflow-hidden flex flex-col justify-center min-h-[6.5rem]">
                 <div className="flex items-center justify-between gap-4">
                   <div className="space-y-1 flex-1">
-                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">Live Command Signal</p>
-                    <p className="mt-2.5 text-lg md:text-xl font-black tracking-tight text-white leading-tight animate-scale-in">
+                    <p className="text-[10px] font-y2k font-extrabold uppercase tracking-widest text-slate-400">Live Command Signal</p>
+                    <p className="mt-1 text-base md:text-lg font-y2k font-bold tracking-tight text-[#1E2330] leading-snug animate-scale-in">
                       "{signalFeed[activeSignal]}"
                     </p>
                   </div>
@@ -143,15 +137,15 @@ export default function Dashboard({ onNavigate, onStartResearch, onGoToStudio })
                     {signalFeed.map((_, index) => (
                       <span
                         key={index}
-                        className={`h-1.5 rounded-full transition-all duration-500 ${index === activeSignal ? "w-6 bg-accent" : "w-1.5 bg-white/20"}`}
+                        className={`h-1.5 rounded-full transition-all duration-500 ${index === activeSignal ? "w-6 bg-blue-600" : "w-1.5 bg-slate-300"}`}
                       />
                     ))}
                   </div>
                 </div>
               </div>
 
-              {/* Quick Action Tiles */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Quick Action Tape Buttons */}
+              <div className="grid grid-cols-2 gap-3">
                 <ActionTile
                   icon={Microscope}
                   eyebrow="Research"
@@ -173,107 +167,108 @@ export default function Dashboard({ onNavigate, onStartResearch, onGoToStudio })
           </div>
         </div>
 
-        {/* Right Sidebar Bento Columns */}
+        {/* Right Sidebar Bento Cards */}
         <div className="xl:col-span-4 flex flex-col gap-6">
-          {/* Operational Snapshot Bento Card */}
-          <div className="rounded-[2.5rem] bg-white border border-border p-6 shadow-premium relative overflow-hidden flex-1 group">
-            <div className="absolute inset-x-0 top-0 h-24 bg-[linear-gradient(180deg,rgba(184,134,11,0.04),transparent)]" />
-            <div className="relative space-y-6">
-              <div className="flex items-center justify-between gap-4">
+          {/* Operational Snapshot Paper Card */}
+          <div className="paper-sheet p-6 shadow-xl relative overflow-hidden flex-1 group">
+            <div className="relative space-y-5">
+              <div className="flex items-center justify-between gap-4 border-b border-[#E3DCCF] pb-4">
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-txt-muted">Leadership Pulse</p>
-                  <h3 className="mt-1 text-xl font-black tracking-tight text-txt">Operational Snapshot</h3>
+                  <p className="text-[10px] font-y2k font-black uppercase tracking-widest text-slate-400">Leadership Pulse</p>
+                  <h3 className="mt-0.5 text-lg font-y2k font-extrabold tracking-tight text-[#1E2330]">Operational Snapshot</h3>
                 </div>
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/5 border border-accent/10 text-accent group-hover:scale-110 duration-300">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 border border-blue-100 text-blue-600 group-hover:rotate-6 duration-300">
                   <Target className="h-5 w-5" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <CommandMetric icon={Compass} label="R&D Cycles" value={stats.totalResearch} detail="Signals explored" />
-                <CommandMetric icon={Clock3} label="Pending Board" value={stats.pendingApproval} detail="Needs admin review" />
-                <CommandMetric icon={CheckCircle2} label="Approved" value={stats.approved} detail="Ready for execution" />
-                <CommandMetric icon={TrendingUp} label="Tracked Views" value={formatNumber(stats.totalViews)} detail="Observed performance" />
+              <div className="grid grid-cols-2 gap-3">
+                <CommandMetric icon={Compass} label="R&D Cycles" value={stats.totalResearch} detail="Signals explored" highlightClass="sticker-highlight-cyan" />
+                <CommandMetric icon={Clock3} label="Pending Board" value={stats.pendingApproval} detail="Needs admin review" highlightClass="sticker-highlight-orange" />
+                <CommandMetric icon={CheckCircle2} label="Approved" value={stats.approved} detail="Ready for execution" highlightClass="sticker-highlight-green" />
+                <CommandMetric icon={TrendingUp} label="Tracked Views" value={formatNumber(stats.totalViews)} detail="Observed performance" highlightClass="sticker-highlight-pink" />
               </div>
             </div>
           </div>
 
-          {/* Production Pressure Bento Card */}
-          <div className="rounded-[2.5rem] bg-[#0A1622] text-white p-6 shadow-[0_24px_60px_-32px_rgba(10,37,64,0.6)] relative overflow-hidden group">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(184,134,11,0.12),transparent_40%)]" />
-            <div className="absolute top-0 right-0 h-40 w-40 rounded-full bg-amber-300/5 blur-3xl" />
-            <div className="relative space-y-6">
+          {/* Production Pressure Card */}
+          <div className="paper-sheet bg-[#1C1E24] text-white p-6 shadow-2xl relative overflow-hidden group border-2 border-[#111317]">
+            <div className="relative space-y-5">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">Production Pressure</p>
-                  <p className="mt-1 text-xl font-black tracking-tight leading-tight">Move the next best topic into script.</p>
+                  <p className="text-[10px] font-y2k font-black uppercase tracking-widest text-slate-400">Production Pressure</p>
+                  <p className="mt-1 text-base font-y2k font-extrabold tracking-tight leading-tight">Move the next best topic into script.</p>
                 </div>
-                <CircleDashed className="h-5 w-5 text-accent animate-spin" style={{ animationDuration: '6s' }} />
+                <CircleDashed className="h-5 w-5 text-yellow-300 animate-spin" style={{ animationDuration: '6s' }} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <DarkStat label="Studio Outputs" value={stats.totalContent} />
                 <DarkStat label="Tracked Clicks" value={stats.totalClicks} />
               </div>
               <button
                 onClick={() => onNavigate("approval")}
-                className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-white flex items-center justify-center gap-2 hover:bg-white/10 active:scale-[0.98] transition-all cursor-pointer shadow-lg"
+                className="w-full blue-label-tag py-3 text-xs tracking-wider flex items-center justify-center gap-2 hover:bg-blue-700 active:scale-[0.98] transition-all cursor-pointer shadow-md"
               >
                 Open Approval Board
-                <MoveRight className="h-4 w-4 text-accent" />
+                <MoveRight className="h-4 w-4 text-yellow-300" />
               </button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Row 2: Briefing, Priority Queue, and Performance Pulse */}
-      <section className="grid grid-cols-1 xl:grid-cols-12 gap-8 xl:items-stretch">
-        <div className="xl:col-span-4 h-full">
+      {/* Row 2: Briefing, Priority Queue, and Performance Pulse (Horizontal Cards) */}
+      <section className="space-y-8">
+        {/* Morning Briefing Horizontal Card */}
+        <div className="w-full">
           <MorningBriefing onStartResearch={onStartResearch} onGoToStudio={onGoToStudio} />
         </div>
 
-        {/* Priority Queue Card */}
-        <div className="xl:col-span-4 h-full rounded-[2.5rem] bg-white border border-border p-6 shadow-premium flex flex-col group">
-          <div className="flex items-center justify-between gap-4 min-h-[5.5rem] border-b border-border/40 pb-5">
+        {/* Priority Queue Black Clipboard Horizontal Container */}
+        <div className="w-full clipboard-board p-6 text-white shadow-2xl group relative">
+          <div className="clipboard-metal-clip" />
+
+          <div className="flex items-center justify-between gap-4 border-b border-slate-800 pb-4 mt-2">
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-txt-muted">Priority Queue</p>
-              <h3 className="mt-1 text-xl font-black tracking-tight text-txt">What leadership should move next</h3>
+              <p className="text-[10px] font-y2k font-black uppercase tracking-widest text-slate-400">Priority Queue</p>
+              <h3 className="mt-0.5 text-lg font-y2k font-extrabold tracking-tight text-white">What leadership should move next</h3>
             </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/5 text-primary group-hover:rotate-6 duration-300">
-              <Layers3 className="h-5 w-5" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-800 text-yellow-300">
+              <Layers3 className="h-4.5 w-4.5" />
             </div>
           </div>
 
-          <div className="mt-6 flex-1 space-y-4">
+          <div className="mt-5">
             {priorityQueue.length > 0 ? (
-              priorityQueue.map((item) => {
-                const stage = item.status || "pending";
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => onStartResearch(item.keyword)}
-                    className="w-full text-left rounded-[2rem] border border-border bg-bg-card p-5 hover:border-accent/40 hover:shadow-premium-hover transition-all duration-300 cursor-pointer min-h-[12rem] flex flex-col relative overflow-hidden group/item"
-                  >
-                    <div className="absolute top-0 left-0 w-1 h-full bg-accent opacity-0 group-hover/item:opacity-100 transition-opacity duration-300" />
-                    <div className="flex items-start justify-between gap-4 flex-1">
-                      <div className="space-y-3 min-w-0 flex-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                {priorityQueue.map((item) => {
+                  const stage = item.status || "pending";
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => onStartResearch(item.keyword)}
+                      className="w-full text-left rounded-xl bg-white text-[#1E2330] p-4 hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between relative overflow-hidden group/item border border-slate-200"
+                    >
+                      <div className="space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className={`rounded-full border px-2.5 py-0.5 text-[8px] font-black uppercase tracking-[0.18em] ${STATUS_STYLES[stage] || STATUS_STYLES.pending}`}>
+                          <span className={`px-2 py-0.5 text-[9px] ${STATUS_STYLES[stage] || STATUS_STYLES.pending}`}>
                             {stage}
                           </span>
-                          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-txt-muted">
+                          <span className="text-[9px] font-y2k font-bold uppercase tracking-wider text-slate-500">
                             {item.depth || "deep"} cycle
                           </span>
                         </div>
-                        <p className="text-base font-black tracking-tight text-txt leading-snug group-hover/item:text-accent transition-colors">{item.keyword}</p>
-                        <p className="text-xs text-txt-secondary leading-relaxed line-clamp-3">
-                          {item.research?.executiveSummary || item.research?.marketLandscape?.summary || "Open this topic to continue the analysis and sharpen the angle."}
+                        <p className="text-sm font-y2k font-extrabold tracking-tight text-[#1E2330] leading-snug group-hover/item:text-blue-600 transition-colors">{item.keyword}</p>
+                        <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
+                          {item.research?.executiveSummary || item.research?.marketLandscape?.summary || "Open this topic to continue analysis."}
                         </p>
                       </div>
-                      <ArrowRight className="h-4 w-4 text-txt-muted shrink-0 mt-1 group-hover/item:translate-x-1 duration-300" />
-                    </div>
-                  </button>
-                );
-              })
+                      <div className="flex justify-end mt-3 border-t border-slate-100 pt-2">
+                        <ArrowRight className="h-4 w-4 text-slate-400 group-hover/item:translate-x-1 duration-300" />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             ) : (
               <EmptyPanel
                 icon={Microscope}
@@ -286,37 +281,36 @@ export default function Dashboard({ onNavigate, onStartResearch, onGoToStudio })
           </div>
         </div>
 
-        {/* Performance Pulse Card */}
-        <div className="xl:col-span-4 h-full rounded-[2.5rem] bg-white border border-border p-6 shadow-premium flex flex-col group">
-          <div className="flex items-center justify-between gap-4 min-h-[5.5rem] border-b border-border/40 pb-5">
+        {/* Performance Pulse Paper Sheet Horizontal Card */}
+        <div className="w-full paper-sheet p-6 shadow-xl group border-2 border-[#E3DCCF]">
+          <div className="flex items-center justify-between gap-4 border-b border-[#E3DCCF] pb-4">
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-txt-muted">Performance Pulse</p>
-              <h3 className="mt-1 text-xl font-black tracking-tight text-txt">Where traction is already showing</h3>
+              <p className="text-[10px] font-y2k font-black uppercase tracking-widest text-slate-400">Performance Pulse</p>
+              <h3 className="mt-0.5 text-lg font-y2k font-extrabold tracking-tight text-[#1E2330]">Where traction is already showing</h3>
             </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-success/10 text-success group-hover:scale-110 duration-300">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 text-green-700">
               <BarChart3 className="h-5 w-5" />
             </div>
           </div>
 
-          <div className="mt-6 flex-1 flex flex-col gap-6">
-            <div className="rounded-3xl bg-gradient-to-br from-[#0A2540] to-[#1A3E5E] p-5 text-white space-y-3 shadow-md relative overflow-hidden group/ctr">
-              <div className="absolute -bottom-6 -right-6 w-20 h-20 bg-accent/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="blue-label-tag p-4 text-white space-y-2 shadow-md relative overflow-hidden flex flex-col justify-between">
               <div className="flex items-center justify-between gap-3 relative z-10">
                 <div>
-                  <p className="text-[8px] font-black uppercase tracking-[0.2em] text-white/55">Average CTR</p>
-                  <p className="mt-1 text-3xl font-black tracking-tight">{performance.totals.avgCtr}%</p>
+                  <p className="text-[9px] font-y2k font-extrabold uppercase tracking-widest text-blue-200">Average CTR</p>
+                  <p className="mt-0.5 text-3xl font-y2k font-black tracking-tight">{performance.totals.avgCtr}%</p>
                 </div>
-                <div className="h-11 w-11 rounded-2xl bg-white/10 flex items-center justify-center group-hover/ctr:scale-110 duration-300">
-                  <Flame className="h-5 w-5 text-accent" />
+                <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center">
+                  <Flame className="h-5 w-5 text-yellow-300" />
                 </div>
               </div>
-              <p className="text-xs text-white/70 leading-relaxed">
-                Use this panel to spot which formats and live posts are already proving audience fit.
+              <p className="text-xs text-blue-100 leading-relaxed font-medium">
+                Spot which formats and live posts are already proving audience fit.
               </p>
             </div>
 
-            <div className="space-y-3">
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-txt-muted">Top Performing Content</p>
+            <div className="space-y-2.5">
+              <p className="text-[10px] font-y2k font-black uppercase tracking-widest text-slate-400">Top Performing Content</p>
               {topContent.length > 0 ? (
                 topContent.map((item) => (
                   <PerformanceRow
@@ -332,8 +326,8 @@ export default function Dashboard({ onNavigate, onStartResearch, onGoToStudio })
               )}
             </div>
 
-            <div className="space-y-3 mt-auto">
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-txt-muted">Platform Click Share</p>
+            <div className="space-y-2.5">
+              <p className="text-[10px] font-y2k font-black uppercase tracking-widest text-slate-400">Platform Click Share</p>
               {platformPerformance.length > 0 ? (
                 platformPerformance.map((item, index) => (
                   <PerformanceRow
@@ -354,15 +348,15 @@ export default function Dashboard({ onNavigate, onStartResearch, onGoToStudio })
       {/* Row 3: Studio Momentum and Decision Shortcuts */}
       <section className="grid grid-cols-1 xl:grid-cols-12 gap-8">
         {/* Studio Momentum */}
-        <div className="xl:col-span-7 rounded-[2.5rem] bg-white border border-border p-6 shadow-premium space-y-6 group">
-          <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-5">
+        <div className="xl:col-span-7 paper-sheet p-6 shadow-xl space-y-5 group">
+          <div className="flex items-center justify-between gap-4 border-b border-[#E3DCCF] pb-4">
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-txt-muted">Studio Momentum</p>
-              <h3 className="mt-1 text-xl font-black tracking-tight text-txt">Most recent production outputs</h3>
+              <p className="text-[10px] font-y2k font-black uppercase tracking-widest text-slate-400">Studio Momentum</p>
+              <h3 className="mt-0.5 text-lg font-y2k font-extrabold tracking-tight text-[#1E2330]">Most recent production outputs</h3>
             </div>
             <button
               onClick={() => onNavigate("studio")}
-              className="rounded-full border border-border hover:border-accent/40 bg-white hover:text-accent px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-txt cursor-pointer transition-colors shadow-sm"
+              className="sticker-highlight-green px-3.5 py-1.5 text-xs cursor-pointer transition-transform hover:scale-105"
             >
               Open Studio
             </button>
@@ -370,27 +364,27 @@ export default function Dashboard({ onNavigate, onStartResearch, onGoToStudio })
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {latestContent.length > 0 ? (
               latestContent.map((item) => (
-                <div key={item.id} className="rounded-3xl border border-border bg-bg-card p-5 space-y-4 hover:border-primary/20 hover:shadow-premium-hover transition-all duration-300 flex flex-col group/momentum">
+                <div key={item.id} className="rounded-xl border border-[#E3DCCF] bg-[#FAF8F3] p-4 space-y-3 hover:shadow-md transition-all duration-300 flex flex-col group/momentum">
                   <div className="flex items-center justify-between gap-3">
-                    <div className="h-10 w-10 rounded-2xl bg-primary/5 text-primary flex items-center justify-center group-hover/momentum:scale-105 transition-transform">
-                      <Video className="h-4.5 w-4.5" />
+                    <div className="h-8 w-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
+                      <Video className="h-4 w-4" />
                     </div>
-                    <span className="text-[9px] font-black uppercase tracking-[0.18em] text-txt-muted">
+                    <span className="text-[9px] font-y2k font-bold uppercase tracking-wider text-slate-500">
                       {item.format.replaceAll("_", " ")}
                     </span>
                   </div>
-                  <div className="space-y-2 flex-1">
-                    <p className="text-base font-black tracking-tight text-txt leading-snug truncate">{item.keyword}</p>
-                    <p className="text-xs text-txt-secondary leading-relaxed line-clamp-3">
+                  <div className="space-y-1.5 flex-1">
+                    <p className="text-sm font-y2k font-extrabold tracking-tight text-[#1E2330] truncate">{item.keyword}</p>
+                    <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">
                       {item.script || "Script draft saved in the studio."}
                     </p>
                   </div>
                   <button
                     onClick={() => onGoToStudio({ keyword: item.keyword, research: item.research || null, format: item.format })}
-                    className="w-full rounded-xl bg-primary hover:bg-primary-hover text-white px-4 py-3 text-[10px] font-black uppercase tracking-[0.18em] flex items-center justify-center gap-2 active:scale-[0.98] transition-all cursor-pointer shadow-md"
+                    className="w-full blue-label-tag py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all cursor-pointer"
                   >
                     Continue Draft
-                    <ArrowRight className="h-3.5 w-3.5 text-accent" />
+                    <ArrowRight className="h-3.5 w-3.5 text-yellow-300" />
                   </button>
                 </div>
               ))
@@ -409,15 +403,15 @@ export default function Dashboard({ onNavigate, onStartResearch, onGoToStudio })
         </div>
 
         {/* Decision Shortcuts */}
-        <div className="xl:col-span-5 rounded-[2.5rem] bg-white border border-border p-6 shadow-premium space-y-6 group">
-          <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-5">
+        <div className="xl:col-span-5 paper-sheet p-6 shadow-xl space-y-5 group">
+          <div className="flex items-center justify-between gap-4 border-b border-[#E3DCCF] pb-4">
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-txt-muted">Decision Shortcuts</p>
-              <h3 className="mt-1 text-xl font-black tracking-tight text-txt">Move from signal to action faster</h3>
+              <p className="text-[10px] font-y2k font-black uppercase tracking-widest text-slate-400">Decision Shortcuts</p>
+              <h3 className="mt-0.5 text-lg font-y2k font-extrabold tracking-tight text-[#1E2330]">Move from signal to action faster</h3>
             </div>
-            <BrainCircuit className="h-5 w-5 text-accent" />
+            <BrainCircuit className="h-5 w-5 text-blue-600" />
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3">
             <ShortcutCard
               icon={Microscope}
               title="Launch a fresh research cycle"
@@ -428,7 +422,7 @@ export default function Dashboard({ onNavigate, onStartResearch, onGoToStudio })
             <ShortcutCard
               icon={CalendarClock}
               title="Review the publishing pipeline"
-              description="Check which topics are stuck in approval, and which ones are already ready for execution."
+              description="Check which topics are stuck in approval, and which ones are ready for execution."
               actionLabel="Open Scheduler"
               onClick={() => onNavigate("calendar")}
             />
@@ -448,40 +442,40 @@ export default function Dashboard({ onNavigate, onStartResearch, onGoToStudio })
 
 function ActionTile({ icon: Icon, eyebrow, label, description, onClick, tone = "light" }) {
   const toneClass = tone === "accent"
-    ? "border-accent/30 bg-accent/10 text-white shadow-[0_4px_20px_-10px_rgba(212,175,55,0.3)] hover:border-accent/60"
-    : "border-white/10 bg-white/5 text-white hover:border-white/20";
+    ? "post-it-yellow text-[#1E2330]"
+    : "bg-white border border-[#E3DCCF] text-[#1E2330]";
 
   return (
     <button
       onClick={onClick}
-      className={`rounded-[2rem] border p-5 text-left backdrop-blur-md hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-300 cursor-pointer flex flex-col justify-between min-h-[9rem] ${toneClass}`}
+      className={`rounded-xl p-4 text-left hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-300 cursor-pointer flex flex-col justify-between min-h-[8.5rem] shadow-sm ${toneClass}`}
     >
-      <div className="flex items-center justify-between gap-4 w-full">
-        <div className="h-10 w-10 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
-          <Icon className="h-5 w-5 text-accent" />
+      <div className="flex items-center justify-between gap-3 w-full">
+        <div className="h-8 w-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+          <Icon className="h-4 w-4 text-blue-600" />
         </div>
-        <ArrowRight className="h-4 w-4 text-white/40" />
+        <ArrowRight className="h-4 w-4 text-slate-400" />
       </div>
-      <div className="mt-4">
-        <p className="text-[8px] font-black uppercase tracking-[0.18em] text-white/50">{eyebrow}</p>
-        <p className="mt-1 text-sm font-black tracking-tight">{label}</p>
+      <div className="mt-2">
+        <p className="text-[9px] font-y2k font-extrabold uppercase tracking-widest text-slate-500">{eyebrow}</p>
+        <p className="mt-0.5 text-sm font-y2k font-extrabold tracking-tight">{label}</p>
       </div>
     </button>
   );
 }
 
-function CommandMetric({ icon: Icon, label, value, detail }) {
+function CommandMetric({ icon: Icon, label, value, detail, highlightClass }) {
   return (
-    <div className="rounded-3xl border border-border bg-bg-card p-4 space-y-3 hover:border-accent/20 hover:shadow-premium-hover transition-all duration-300 group/metric">
-      <div className="flex items-center justify-between gap-3">
-        <div className="h-10 w-10 rounded-2xl bg-primary/5 text-primary flex items-center justify-center group-hover/metric:scale-105 duration-300">
-          <Icon className="h-5 w-5 text-accent" />
+    <div className="rounded-xl border border-[#E3DCCF] bg-[#FAF8F3] p-3.5 space-y-2 hover:shadow-md transition-all duration-300 group/metric">
+      <div className="flex items-center justify-between gap-2">
+        <div className="h-8 w-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center">
+          <Icon className="h-4 w-4 text-blue-600" />
         </div>
-        <span className="text-xl font-black tracking-tight text-txt">{value}</span>
+        <span className={`px-2 py-0.5 text-base font-y2k font-extrabold ${highlightClass}`}>{value}</span>
       </div>
       <div>
-        <p className="text-[8px] font-black uppercase tracking-[0.18em] text-txt-muted">{label}</p>
-        <p className="mt-0.5 text-xs text-txt-secondary leading-snug">{detail}</p>
+        <p className="text-[9px] font-y2k font-extrabold uppercase tracking-wider text-slate-500">{label}</p>
+        <p className="mt-0.5 text-xs text-slate-600 leading-snug">{detail}</p>
       </div>
     </div>
   );
@@ -489,32 +483,32 @@ function CommandMetric({ icon: Icon, label, value, detail }) {
 
 function MiniData({ label, value }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-white/5 bg-black/20 px-3.5 py-2.5">
-      <span className="text-[8px] font-black uppercase tracking-[0.18em] text-white/40">{label}</span>
-      <span className="text-xs font-black text-white">{value}</span>
+    <div className="flex items-center justify-between gap-3 rounded-lg bg-yellow-200/60 px-3 py-1.5">
+      <span className="text-[9px] font-y2k font-bold uppercase tracking-wider text-slate-700">{label}</span>
+      <span className="text-xs font-y2k font-black text-slate-900">{value}</span>
     </div>
   );
 }
 
 function DarkStat({ label, value }) {
   return (
-    <div className="rounded-2xl border border-white/5 bg-white/5 p-4 flex flex-col justify-between">
-      <p className="text-[8px] font-black uppercase tracking-[0.18em] text-white/40">{label}</p>
-      <p className="mt-1.5 text-xl font-black tracking-tight text-white">{value}</p>
+    <div className="rounded-xl border border-slate-800 bg-slate-900 p-3.5 flex flex-col justify-between">
+      <p className="text-[9px] font-y2k font-extrabold uppercase tracking-widest text-slate-400">{label}</p>
+      <p className="mt-1 text-lg font-y2k font-extrabold text-white">{value}</p>
     </div>
   );
 }
 
 function PerformanceRow({ title, meta, value, subvalue }) {
   return (
-    <div className="rounded-2xl border border-border bg-bg-card p-4 flex items-start justify-between gap-4 hover:border-accent/10 transition-colors">
+    <div className="rounded-xl border border-[#E3DCCF] bg-[#FAF8F3] p-3 flex items-start justify-between gap-3">
       <div className="min-w-0">
-        <p className="text-xs font-black tracking-tight text-txt truncate">{title}</p>
-        <p className="mt-0.5 text-[8px] font-black uppercase tracking-[0.18em] text-txt-muted">{meta}</p>
+        <p className="text-xs font-y2k font-extrabold text-[#1E2330] truncate">{title}</p>
+        <p className="mt-0.5 text-[9px] font-y2k font-bold uppercase tracking-wider text-slate-400">{meta}</p>
       </div>
       <div className="text-right shrink-0">
-        <p className="text-xs font-black text-txt">{value}</p>
-        {subvalue ? <p className="mt-0.5 text-[8px] font-bold text-txt-muted">{subvalue}</p> : null}
+        <p className="text-xs font-y2k font-extrabold text-[#1E2330]">{value}</p>
+        {subvalue ? <p className="mt-0.5 text-[9px] font-bold text-slate-400">{subvalue}</p> : null}
       </div>
     </div>
   );
@@ -524,21 +518,21 @@ function ShortcutCard({ icon: Icon, title, description, actionLabel, onClick }) 
   return (
     <button
       onClick={onClick}
-      className="w-full rounded-3xl border border-border bg-bg-card p-5 text-left hover:border-accent/30 hover:shadow-premium-hover transition-all duration-300 cursor-pointer group/shortcut"
+      className="w-full rounded-xl border border-[#E3DCCF] bg-[#FAF8F3] p-4 text-left hover:shadow-md transition-all duration-300 cursor-pointer group/shortcut"
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-3 min-w-0">
-          <div className="h-10 w-10 rounded-2xl bg-primary/5 text-primary flex items-center justify-center group-hover/shortcut:scale-105 duration-300">
-            <Icon className="h-4.5 w-4.5 text-accent" />
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-2 min-w-0">
+          <div className="h-8 w-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
+            <Icon className="h-4 w-4 text-blue-600" />
           </div>
           <div>
-            <p className="text-base font-black tracking-tight text-txt group-hover/shortcut:text-accent transition-colors">{title}</p>
-            <p className="mt-1 text-xs text-txt-secondary leading-relaxed">{description}</p>
+            <p className="text-sm font-y2k font-extrabold text-[#1E2330] group-hover/shortcut:text-blue-600 transition-colors">{title}</p>
+            <p className="mt-0.5 text-xs text-slate-600 leading-relaxed">{description}</p>
           </div>
         </div>
-        <MoveRight className="h-4 w-4 text-txt-muted shrink-0 mt-1 group-hover/shortcut:translate-x-1 duration-300" />
+        <MoveRight className="h-4 w-4 text-slate-400 shrink-0 mt-1 group-hover/shortcut:translate-x-1 duration-300" />
       </div>
-      <div className="mt-4 text-[9px] font-black uppercase tracking-[0.18em] text-accent">
+      <div className="mt-3 text-[9px] font-y2k font-extrabold uppercase tracking-widest text-blue-600">
         {actionLabel}
       </div>
     </button>
@@ -547,15 +541,15 @@ function ShortcutCard({ icon: Icon, title, description, actionLabel, onClick }) 
 
 function EmptyPanel({ icon: Icon, title, description, actionLabel, onClick }) {
   return (
-    <div className="rounded-[2rem] border border-dashed border-border bg-bg-card p-8 text-center">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/5 text-primary">
-        <Icon className="h-5 w-5 text-accent" />
+    <div className="rounded-xl border border-dashed border-[#E3DCCF] bg-[#FAF8F3] p-6 text-center">
+      <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+        <Icon className="h-5 w-5 text-blue-600" />
       </div>
-      <p className="mt-4 text-base font-black tracking-tight text-txt">{title}</p>
-      <p className="mt-1.5 text-xs text-txt-secondary leading-relaxed max-w-xs mx-auto">{description}</p>
+      <p className="mt-3 text-sm font-y2k font-extrabold text-[#1E2330]">{title}</p>
+      <p className="mt-1 text-xs text-slate-600 leading-relaxed max-w-xs mx-auto">{description}</p>
       <button
         onClick={onClick}
-        className="mt-5 rounded-xl bg-primary hover:bg-primary-hover px-5 py-3 text-[9px] font-black uppercase tracking-[0.18em] text-white cursor-pointer active:scale-[0.98] transition-all shadow-md"
+        className="mt-4 blue-label-tag px-4 py-2 text-xs cursor-pointer active:scale-[0.98] transition-all shadow-md"
       >
         {actionLabel}
       </button>
@@ -565,7 +559,7 @@ function EmptyPanel({ icon: Icon, title, description, actionLabel, onClick }) {
 
 function EmptyInline({ text }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border bg-bg-card px-4 py-4 text-xs text-txt-muted font-medium">
+    <div className="rounded-xl border border-dashed border-[#E3DCCF] bg-[#FAF8F3] px-3.5 py-3 text-xs text-slate-400 font-medium">
       {text}
     </div>
   );

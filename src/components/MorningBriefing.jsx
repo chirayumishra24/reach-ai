@@ -45,100 +45,84 @@ export default function MorningBriefing({ onStartResearch, onGoToStudio }) {
 
   if (loading) {
     return (
-      <div className="h-full p-10 rounded-[3.5rem] bg-white border border-border shadow-premium space-y-6 animate-pulse">
-        <div className="h-4 w-48 bg-bg-elevated rounded-full" />
-        <div className="space-y-4">
-          <div className="h-40 bg-bg-elevated rounded-3xl" />
-          <div className="h-40 bg-bg-elevated rounded-3xl" />
+      <div className="w-full p-8 paper-sheet shadow-xl space-y-6 animate-pulse">
+        <div className="h-4 w-48 bg-slate-200 rounded-full" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="h-36 bg-slate-200 rounded-xl" />
+          <div className="h-36 bg-slate-200 rounded-xl" />
+          <div className="h-36 bg-slate-200 rounded-xl" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-full p-8 lg:p-10 rounded-[3.5rem] bg-white border border-border shadow-premium relative overflow-hidden group flex flex-col">
-      <div className="absolute top-0 right-0 p-10 opacity-[0.02] pointer-events-none group-hover:rotate-12 transition-transform duration-700">
-        <Star className="w-48 h-48" />
-      </div>
-      
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-border/50 pb-8 min-h-[5.5rem]">
-        <div className="flex items-center gap-4">
-          <div className="p-4 rounded-[1.25rem] bg-accent/10 text-accent shadow-inner">
-            <Bot className="w-6 h-6" />
+    <div className="w-full paper-sheet p-6 lg:p-8 shadow-xl relative overflow-hidden group flex flex-col border-2 border-[#E3DCCF]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E3DCCF] pb-4">
+        <div className="flex items-center gap-3">
+          <div className="p-3 rounded-xl bg-yellow-300 border border-yellow-400 text-slate-900 shadow-sm">
+            <Bot className="w-5 h-5 text-blue-600" />
           </div>
           <div>
-            <h4 className="text-[15px] font-black text-txt uppercase tracking-wider">Director's Morning Briefing</h4>
-            <div className="flex items-center gap-2 mt-1">
-              <p className="text-[10px] font-bold text-txt-muted uppercase tracking-[0.2em]">Autopilot Intelligence Scan</p>
-              <span className="text-[10px] text-primary/40">•</span>
-              <p className="text-[9px] font-black text-primary/60 uppercase tracking-widest">Last Scanned: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+            <h4 className="text-sm font-y2k font-extrabold text-[#1E2330] uppercase tracking-wider">Director's Morning Briefing</h4>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="text-[10px] font-y2k font-bold text-slate-500 uppercase tracking-wider">Autopilot Intelligence Scan</p>
+              <span className="text-[10px] text-slate-400">•</span>
+              <p className="text-[9px] font-mono font-bold text-blue-600 uppercase tracking-widest">Last Scanned: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-accent/5 border border-accent/20 shadow-sm self-start sm:self-auto">
-          <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-[10px] font-black uppercase tracking-widest text-accent">3 NEW SIGNALS</span>
+        <div className="sticker-highlight-pink px-3.5 py-1 text-xs self-start sm:self-auto shadow-sm">
+          3 NEW SIGNALS
         </div>
       </div>
 
-      <div className="mt-8 flex-1 space-y-5">
+      <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
         {briefings.map((b) => (
-          <div key={b.id} className="p-7 rounded-[2.5rem] bg-bg-elevated/20 border border-border/40 hover:border-primary/30 hover:bg-white hover:shadow-2xl transition-all duration-500 group/card relative overflow-hidden min-h-[20rem] flex flex-col">
-            <div className="absolute top-0 left-0 w-1 h-full grad-primary opacity-0 group-hover/card:opacity-100 transition-opacity" />
-            
-            <div className="flex flex-col gap-6 flex-1">
-              <div className="space-y-4 flex-1">
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className={`text-[9px] font-black px-2.5 py-1.5 rounded-lg border shadow-sm shrink-0 ${
-                    b.impact === "CRITICAL" ? "bg-danger/5 border-danger/20 text-danger" : 
-                    b.impact === "HIGH" ? "bg-warning/10 border-warning/20 text-warning" : 
-                    "bg-success/5 border-success/20 text-success"
-                  }`}>
-                    {b.impact} IMPACT
-                  </span>
-                  <h5 className="text-[15px] font-black text-txt tracking-tight leading-tight">{b.topic}</h5>
-                </div>
-                
-                <p className="text-xs text-txt-secondary leading-relaxed font-medium line-clamp-4">
-                  {b.summary}
-                </p>
-                
-                <div className="flex items-start gap-3 pt-2">
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-border shadow-sm max-w-full overflow-hidden">
-                    <Wand2 className="w-3.5 h-3.5 text-primary shrink-0" />
-                    <span className="text-[9px] font-black text-txt-muted uppercase tracking-widest truncate">
-                      Strategy: {b.angle}
-                    </span>
-                  </div>
-                </div>
+          <div key={b.id} className="p-5 rounded-xl bg-[#FAF8F3] border border-[#E3DCCF] hover:shadow-md transition-all duration-300 flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={`text-[9px] font-y2k font-bold px-2 py-0.5 rounded shadow-xs ${
+                  b.impact === "CRITICAL" ? "sticker-highlight-orange" : 
+                  b.impact === "HIGH" ? "sticker-highlight-green" : 
+                  "sticker-highlight-cyan"
+                }`}>
+                  {b.impact} IMPACT
+                </span>
+                <h5 className="text-sm font-y2k font-extrabold text-[#1E2330] tracking-tight truncate">{b.topic}</h5>
               </div>
               
-              <div className="grid grid-cols-2 gap-3 pt-2 mt-auto">
-                <button 
-                  onClick={() => onStartResearch(b.keyword)}
-                  className="px-4 py-3.5 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20 cursor-pointer"
-                >
-                  <Microscope className="w-3.5 h-3.5" /> Analyze
-                </button>
-                <button 
-                  onClick={() => onGoToStudio({ 
-                    keyword: b.keyword, 
-                    research: { executiveSummary: b.summary, suggestedAngles: [{ angle: b.angle }] },
-                    format: b.recommendedFormat
-                  })}
-                  className="px-4 py-3.5 rounded-xl bg-white border border-border text-txt text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-bg-elevated active:scale-95 transition-all cursor-pointer shadow-sm"
-                >
-                   Draft <ArrowRight className="w-3.5 h-3.5" />
-                </button>
+              <p className="text-xs text-slate-600 leading-relaxed font-medium line-clamp-3">
+                {b.summary}
+              </p>
+              
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-[#E3DCCF] text-[9px] font-y2k font-bold text-slate-500 truncate">
+                <Wand2 className="w-3 h-3 text-blue-600 shrink-0" />
+                <span className="truncate">Strategy: {b.angle}</span>
               </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-2 pt-3 mt-3 border-t border-[#E3DCCF]">
+              <button 
+                onClick={() => onStartResearch(b.keyword)}
+                className="blue-label-tag py-2 text-[10px] flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-sm cursor-pointer"
+              >
+                <Microscope className="w-3.5 h-3.5" /> Analyze
+              </button>
+              <button 
+                onClick={() => onGoToStudio({ 
+                  keyword: b.keyword, 
+                  research: { executiveSummary: b.summary, suggestedAngles: [{ angle: b.angle }] },
+                  format: b.recommendedFormat
+                })}
+                className="py-2 rounded-lg bg-white border border-[#E3DCCF] text-[#1E2330] text-[10px] font-y2k font-bold flex items-center justify-center gap-1 hover:bg-[#EFEADF] active:scale-95 transition-all cursor-pointer shadow-xs"
+              >
+                 Draft <ArrowRight className="w-3.5 h-3.5 text-blue-600" />
+              </button>
             </div>
           </div>
         ))}
       </div>
-
-      <button className="w-full mt-6 py-4 rounded-2xl bg-bg-card border border-border text-[10px] font-black text-txt-muted uppercase tracking-widest hover:text-primary hover:border-primary/20 transition-all flex items-center justify-center gap-2 cursor-pointer">
-        <Zap className="w-4 h-4" /> Refresh Global Intelligence Scan
-      </button>
     </div>
   );
 }
