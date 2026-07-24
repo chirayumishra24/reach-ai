@@ -1,5 +1,7 @@
-const GRAPH_BASE_URL = "https://graph.facebook.com";
-const DEFAULT_GRAPH_VERSION = process.env.META_GRAPH_VERSION || "v22.0";
+import { computeAnalytics } from "../crawlers/profile-scraper";
+import { getValidAccessToken, getInstagramAccountId } from "./meta-auth";
+import { buildGraphUrl, checkRateLimit, trackApiCall } from "./meta-config";
+
 const MEDIA_PAGE_LIMIT = 50;
 const MAX_MEDIA_PAGES = 5;
 const INSIGHT_METRIC_ATTEMPTS = [
@@ -21,42 +23,46 @@ function normalizePermalink(value) {
   }
 }
 
-function buildGraphUrl(path, params = {}) {
-  const url = new URL(`${GRAPH_BASE_URL}/${DEFAULT_GRAPH_VERSION}${path}`);
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== "") {
-      url.searchParams.set(key, String(value));
-    }
-  });
-  return url;
-}
-
-function getInstagramSyncConfig(accessToken, instagramAccountId) {
-  // Fallback to env variables if not provided dynamically (keeps compatibility)
-  const token = accessToken || process.env.META_ACCESS_TOKEN;
-  const id = instagramAccountId || process.env.META_IG_ACCOUNT_ID;
-  const missing = [];
-
-  if (!token) missing.push("META_ACCESS_TOKEN");
-  if (!id) missing.push("META_IG_ACCOUNT_ID");
-
-  return {
-    ready: missing.length === 0,
-    missing,
-    accessToken: token,
-    instagramAccountId: id,
-    graphVersion: DEFAULT_GRAPH_VERSION,
-  };
+async function getInstagramSyncConfig(accessToken, instagramAccountId) {
+  try {
+    const token = accessToken || (await getValidAccessToken());
+    const id = instagramAccountId || (await getInstagramAccountId());
+    return {
+      ready: Boolean(token && id),
+      missing: [!token && "META_ACCESS_TOKEN", !id && "META_IG_ACCOUNT_ID"].filter(Boolean),
+      accessToken: token || "",
+      instagramAccountId: id || "",
+    };
+  } catch (err) {
+    const token = accessToken || process.env.META_ACCESS_TOKEN || "";
+    const id = instagramAccountId || process.env.META_IG_ACCOUNT_ID || "";
+    const missing = [!token && "META_ACCESS_TOKEN", !id && "META_IG_ACCOUNT_ID"].filter(Boolean);
+    return {
+      ready: missing.length === 0,
+      missing,
+      accessToken: token,
+      instagramAccountId: id,
+      error: err.message,
+    };
+  }
 }
 
 async function graphRequest(path, config, params = {}) {
-  if (!config || !config.ready) {
-    throw new Error(`Missing Meta configuration: ${config?.missing?.join(", ") || "No config passed"}`);
+  const cfg = config || (await getInstagramSyncConfig());
+  if (!cfg.ready) {
+    throw new Error(`Missing Meta configuration: ${cfg.missing.join(", ")}`);
   }
+
+  // Rate limit check
+  const rateCheck = checkRateLimit("instagram");
+  if (!rateCheck.allowed) {
+    throw new Error(`Instagram API rate limit exceeded. Resets in ${Math.ceil(rateCheck.resetsIn / 60000)} minutes.`);
+  }
+  trackApiCall("instagram");
 
   const url = buildGraphUrl(path, {
     ...params,
-    access_token: config.accessToken,
+    access_token: cfg.accessToken,
   });
 
   const response = await fetch(url, {
@@ -71,7 +77,13 @@ async function graphRequest(path, config, params = {}) {
 
   if (!response.ok || payload?.error) {
     const message = payload?.error?.message || `Meta request failed with status ${response.status}`;
-    throw new Error(message);
+    const err = new Error(message);
+    const errCode = payload?.error?.code;
+    const errType = payload?.error?.type;
+    if (errCode === 190 || errType === "OAuthException") {
+      err.metaTokenExpired = true;
+    }
+    throw err;
   }
 
   return payload;
@@ -130,13 +142,11 @@ async function getMediaInsights(mediaId, config) {
 
   return [];
 }
-
-export function getInstagramSyncStatus(accessToken, instagramAccountId) {
-  const config = getInstagramSyncConfig(accessToken, instagramAccountId);
+export async function getInstagramSyncStatus(accessToken, instagramAccountId) {
+  const config = await getInstagramSyncConfig(accessToken, instagramAccountId);
   return {
     ready: config.ready,
     missing: config.missing,
-    graphVersion: config.graphVersion,
   };
 }
 
@@ -152,7 +162,7 @@ export async function syncInstagramPost({ publishedUrl = "", postId = "", access
     throw new Error("Instagram sync requires an instagram.com post URL.");
   }
 
-  const config = getInstagramSyncConfig(accessToken, instagramAccountId);
+  const config = await getInstagramSyncConfig(accessToken, instagramAccountId);
 
   const media = normalizedPostId
     ? await getMediaDetails(normalizedPostId, config)
@@ -194,5 +204,81 @@ export async function syncInstagramPost({ publishedUrl = "", postId = "", access
       mediaProductType: media.media_product_type || "",
       availableMetrics: insights.map((entry) => entry.name),
     },
+  };
+}
+
+export async function fetchInstagramProfileFromMeta(username) {
+  const config = await getInstagramSyncConfig();
+  if (!config.ready) {
+    throw new Error(`Missing Meta configuration: ${config.missing.join(", ")}`);
+  }
+
+  const cleanUser = String(username || "").toLowerCase().trim().replace(/^@/, "");
+  if (!cleanUser) throw new Error("Username is required for Meta profile fetch.");
+
+  // 1. Fetch connected account basic info to confirm username match
+  console.log(`[Meta API] Fetching account info for ID: ${config.instagramAccountId}`);
+  const userPayload = await graphRequest(`/${config.instagramAccountId}`, {
+    fields: "biography,followers_count,follows_count,media_count,name,profile_picture_url,username,website",
+  });
+
+  const connectedUsername = String(userPayload.username || "").toLowerCase().trim();
+  if (connectedUsername !== cleanUser) {
+    throw new Error(`Connected account is @${connectedUsername}, but requested @${cleanUser}`);
+  }
+
+  // 2. Fetch recent media posts
+  console.log(`[Meta API] Fetching recent media for @${connectedUsername}`);
+  const mediaPayload = await graphRequest(`/${config.instagramAccountId}/media`, {
+    fields: "caption,comments_count,id,like_count,media_product_type,media_type,media_url,permalink,thumbnail_url,timestamp",
+    limit: 12,
+  });
+
+  const rawPosts = mediaPayload?.data || [];
+
+  // Map into standard Dashboard post format
+  const posts = rawPosts.map((p) => {
+    let contentType = "Static Image";
+    if (p.media_type === "VIDEO") {
+      contentType = "Reel / Video";
+    } else if (p.media_type === "CAROUSEL_ALBUM") {
+      contentType = "Carousel";
+    }
+
+    return {
+      id: p.id,
+      caption: p.caption || "",
+      contentType,
+      likes: Number(p.like_count || 0),
+      comments: Number(p.comments_count || 0),
+      views: 0, // Public views not available without specific organic media insights
+      timestamp: p.timestamp || null,
+      thumbnail: p.media_url || p.thumbnail_url || "",
+      url: p.permalink || "",
+      hashtags: (p.caption || "").match(/#[\w]+/g) || [],
+      engagementLevel: Number(p.like_count || 0) > 1000 ? "High" : "Medium",
+    };
+  });
+
+  const profile = {
+    username: connectedUsername,
+    fullName: userPayload.name || connectedUsername,
+    bio: userPayload.biography || "",
+    followers: Number(userPayload.followers_count || 0),
+    following: Number(userPayload.follows_count || 0),
+    postCount: Number(userPayload.media_count || posts.length),
+    profilePic: userPayload.profile_picture_url || "",
+    isVerified: false,
+    externalUrl: userPayload.website || "",
+    category: "Business",
+  };
+
+  const analysis = computeAnalytics(posts, profile);
+
+  return {
+    profile,
+    posts,
+    analysis,
+    source: "Meta Graph API",
   };
 }

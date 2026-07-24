@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Skilizee Social Media Tool",
+  "version": "1.0",
+  "description": "Scrapes Instagram/Facebook profile info and synchronizes directly with your Skilizee Agent Dashboard.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://www.instagram.com/*",
+    "https://www.facebook.com/*",
+    "http://localhost:3000/*",
+    "http://localhost:3001/*",
+    "http://localhost:3002/*",
+    "https://*.vercel.app/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.instagram.com/*",
+        "https://www.facebook.com/*",
+        "http://localhost:3000/*",
+        "http://localhost:3001/*",
+        "http://localhost:3002/*",
+        "https://*.vercel.app/*"
+      ],
+      "js": ["content.js"]
+    }
+  ]
+}

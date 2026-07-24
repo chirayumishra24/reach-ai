@@ -10,10 +10,10 @@ import {
   BrainCircuit, 
   Calendar, 
   Settings,
+  ShieldCheck,
   LogOut 
 } from "lucide-react";
 import { Instagram } from "./InstagramIcon";
-
 import { signOut, useSession } from "next-auth/react";
 
 const NAV_GROUPS = [
@@ -51,6 +51,16 @@ export default function Sidebar({ activeTab, onTabChange }) {
     }
   };
 
+  const groups = [...NAV_GROUPS];
+  if (session?.user?.role === "admin") {
+    groups.push({
+      title: "ADMINISTRATION",
+      items: [
+        { id: "admin", label: "Admin Panel", icon: ShieldCheck }
+      ]
+    });
+  }
+
   return (
     <aside className="w-[80px] lg:w-[280px] bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 h-screen sticky top-0 z-50 text-slate-300">
       {/* Branding */}
@@ -70,7 +80,7 @@ export default function Sidebar({ activeTab, onTabChange }) {
 
       {/* Navigation */}
       <div className="flex-1 px-4 space-y-6 overflow-y-auto custom-scroll">
-        {NAV_GROUPS.map((group) => (
+        {groups.map((group) => (
           <div key={group.title} className="space-y-1.5">
             <h3 className="hidden lg:block px-4 text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">
               {group.title}

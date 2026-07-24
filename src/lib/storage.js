@@ -9,6 +9,7 @@ const KEYS = {
   content: "content",
   stats: "stats",
   insights: "insights",
+  ig_analysis: "reach_ig_analysis",
 };
 
 const STORAGE_EVENT = "reach-storage-updated";
@@ -397,4 +398,40 @@ export function usePerformanceInsights() {
 // --- SETTINGS (MOCK) ---
 export function useSettingsSnapshot() {
   return { schoolName: "Reach.ai Workspace", schoolVision: "Shaping the future of education" };
+}
+export function saveAnalysis(data) {
+  if (typeof window === "undefined") return data;
+  const all = getAnalysisHistory();
+  const entry = {
+    ...data,
+    id: data.id || `analysis-${Date.now()}`,
+    savedAt: data.savedAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  
+  const existingIndex = all.findIndex(a => a.id === entry.id || a.profile?.username === entry.profile?.username);
+  if (existingIndex >= 0) {
+    all[existingIndex] = entry;
+  } else {
+    all.unshift(entry);
+  }
+  
+  if (all.length > 20) all.length = 20;
+  try {
+    localStorage.setItem(KEYS.ig_analysis, JSON.stringify(all));
+  } catch (e) {}
+  return entry;
+}
+
+export function getAnalysisHistory() {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(localStorage.getItem(KEYS.ig_analysis) || "[]");
+  } catch (e) {
+    return [];
+  }
+}
+
+export function useAnalysisHistory() {
+  return getAnalysisHistory();
 }
