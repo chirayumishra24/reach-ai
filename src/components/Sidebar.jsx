@@ -22,6 +22,7 @@ const NAV_GROUPS = [
     items: [
       { id: "dashboard", label: "Executive Hub", icon: Home },
       { id: "instagram", label: "Instagram Reach", icon: Instagram },
+      { id: "meta-analytics", label: "Meta Analytics", icon: BarChart2 },
       { id: "discover", label: "News & Signals", icon: Search },
     ]
   },

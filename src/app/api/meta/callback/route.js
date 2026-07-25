@@ -1,101 +1,73 @@
-import { db } from "@/lib/db";
-import { socialAccounts } from "@/lib/db/schema";
-import { exchangeCodeForToken, getLongLivedToken, discoverInstagramAccounts } from "@/lib/meta/oauth";
-import { encryptToken } from "@/lib/meta/token-manager";
-import { and, eq } from "drizzle-orm";
+import { auth } from "@/auth";
+import { connectMetaAccount } from "@/lib/meta/connection-manager";
 import { NextResponse } from "next/server";
 
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
-  const state = searchParams.get("state"); // state represents the orgId
+  const stateParam = searchParams.get("state");
   const error = searchParams.get("error");
+  const errorDescription = searchParams.get("error_description");
 
   const baseUrl = req.nextUrl.origin;
 
+  // Handle OAuth errors from Meta
   if (error) {
-    console.error("Meta OAuth returned error:", error);
-    return NextResponse.redirect(`${baseUrl}/app?tab=accounts&error=${encodeURIComponent(error)}`);
+    console.error("[Meta Callback] OAuth error:", error, errorDescription);
+    return NextResponse.redirect(
+      `${baseUrl}/onboarding?step=error&error=${encodeURIComponent(errorDescription || error)}`
+    );
   }
 
-  if (!code || !state) {
-    return NextResponse.redirect(`${baseUrl}/app?tab=accounts&error=missing_parameters`);
+  if (!code || !stateParam) {
+    return NextResponse.redirect(
+      `${baseUrl}/onboarding?step=error&error=missing_parameters`
+    );
   }
 
-  const orgId = state;
+  // Decode state to extract userId
+  let stateData;
+  try {
+    stateData = JSON.parse(Buffer.from(stateParam, "base64url").toString());
+  } catch {
+    return NextResponse.redirect(
+      `${baseUrl}/onboarding?step=error&error=invalid_state`
+    );
+  }
+
+  const { userId } = stateData;
+
+  // Verify the authenticated user matches the state
+  const session = await auth();
+  if (!session?.user?.id || session.user.id !== userId) {
+    return NextResponse.redirect(
+      `${baseUrl}/onboarding?step=error&error=session_mismatch`
+    );
+  }
 
   try {
-    // 1. Exchange auth code for short-lived token
-    const shortLived = await exchangeCodeForToken(code);
+    // Complete the full OAuth flow: code → tokens → discovery → encrypted DB store
+    const result = await connectMetaAccount(userId, code);
 
-    // 2. Exchange short-lived token for long-lived token (60 days)
-    const longLived = await getLongLivedToken(shortLived.accessToken);
+    console.log("[Meta Callback] Successfully connected:", {
+      igUsername: result.igUsername,
+      fbPage: result.fbPageName,
+      accountsFound: result.allAccounts.length,
+    });
 
-    // 3. Discover Instagram Business Accounts
-    const accounts = await discoverInstagramAccounts(longLived.accessToken);
+    // Redirect to onboarding confirmation step
+    const params = new URLSearchParams({
+      step: "confirm",
+      connectionId: result.connectionId,
+      username: result.igUsername || "",
+      followers: String(result.igFollowers || 0),
+    });
 
-    if (accounts.length === 0) {
-      return NextResponse.redirect(
-        `${baseUrl}/app?tab=accounts&error=no_instagram_accounts_found`
-      );
-    }
-
-    // 4. Save accounts to database
-    const expiresAt = new Date();
-    expiresAt.setSeconds(expiresAt.getSeconds() + (longLived.expiresIn || 5184000));
-
-    for (const acc of accounts) {
-      // Check if account already connected to this org
-      const [existing] = await db
-        .select()
-        .from(socialAccounts)
-        .where(
-          and(
-            eq(socialAccounts.orgId, orgId),
-            eq(socialAccounts.platformUserId, acc.instagramAccountId)
-          )
-        )
-        .limit(1);
-
-      const encryptedToken = encryptToken(longLived.accessToken);
-
-      if (existing) {
-        // Update credentials
-        await db
-          .update(socialAccounts)
-          .set({
-            accessToken: encryptedToken,
-            tokenExpiresAt: expiresAt,
-            platformUsername: acc.instagramUsername,
-            profilePictureUrl: acc.profilePictureUrl,
-            metaPageId: acc.facebookPageId,
-            updatedAt: new Date(),
-          })
-          .where(eq(socialAccounts.id, existing.id));
-      } else {
-        // Insert new social account connection
-        await db.insert(socialAccounts).values({
-          orgId,
-          platform: "instagram",
-          platformUserId: acc.instagramAccountId,
-          platformUsername: acc.instagramUsername,
-          accessToken: encryptedToken,
-          tokenExpiresAt: expiresAt,
-          metaPageId: acc.facebookPageId,
-          metaIgAccountId: acc.instagramAccountId,
-          profilePictureUrl: acc.profilePictureUrl,
-          followersCount: 0, // Will populate during first sync
-          isActive: true,
-        });
-      }
-    }
-
-    // Redirect to success page
-    return NextResponse.redirect(`${baseUrl}/app?tab=accounts&success=connected`);
+    return NextResponse.redirect(`${baseUrl}/onboarding?${params.toString()}`);
   } catch (err) {
-    console.error("Meta OAuth callback processing failed:", err);
+    console.error("[Meta Callback] OAuth flow failed:", err);
     return NextResponse.redirect(
-      `${baseUrl}/app?tab=accounts&error=${encodeURIComponent(err.message || "oauth_failed")}`
+      `${baseUrl}/onboarding?step=error&error=${encodeURIComponent(err.message || "connection_failed")}`
     );
   }
 }

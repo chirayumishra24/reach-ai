@@ -214,6 +214,35 @@ export default function Settings() {
         )}
 
         {activeTab === "billing" && <BillingSettings />}
+
+        {activeTab === "connections" && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="paper-sheet p-8 space-y-6 shadow-xl border-2 border-[#E3DCCF]">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 text-white"><Instagram className="w-5 h-5" /></div>
+                <div>
+                  <h4 className="text-xs font-y2k font-extrabold text-[#1E2330] uppercase tracking-wider">Instagram Connection</h4>
+                  <p className="text-xs text-slate-500 font-medium">Connect your Instagram Business or Creator account for analytics.</p>
+                </div>
+              </div>
+
+              <MetaConnectionPanel />
+            </div>
+
+            <div className="paper-sheet p-6 shadow-lg border-2 border-[#E3DCCF]">
+              <div className="flex items-center gap-3 mb-3">
+                <Info className="w-4 h-4 text-blue-600" />
+                <h4 className="text-xs font-y2k font-extrabold text-[#1E2330]">Need Help?</h4>
+              </div>
+              <p className="text-xs text-slate-600 mb-3">
+                If you haven&apos;t set up a Meta Developer App yet, follow our step-by-step guide.
+              </p>
+              <a href="/guide" className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-colors">
+                <Link className="w-3.5 h-3.5" /> Setup Guide
+              </a>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Global Save Button */}
@@ -239,3 +268,142 @@ function Field({ label, children }) {
     </div>
   );
 }
+
+function MetaConnectionPanel() {
+  const [status, setStatus] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const fetchStatus = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/analytics/profile");
+      const data = await res.json();
+      setStatus(data);
+    } catch {
+      setStatus({ connected: false });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchStatus(); }, []);
+
+  const handleDisconnect = async (connectionId) => {
+    if (!confirm("Disconnect this Instagram account? You can reconnect anytime.")) return;
+    setActionLoading(true);
+    try {
+      await fetch("/api/meta/disconnect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ connectionId }),
+      });
+      await fetchStatus();
+    } catch (err) {
+      alert("Failed to disconnect: " + err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setActionLoading(true);
+    try {
+      await fetch("/api/meta/refresh", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      await fetchStatus();
+    } catch (err) {
+      alert("Refresh failed: " + err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-3 py-6">
+        <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <span className="text-xs text-slate-500 font-medium">Checking connection status...</span>
+      </div>
+    );
+  }
+
+  if (!status?.connected) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+          <p className="text-xs text-amber-800 font-medium">No Instagram account connected. Connect your Business or Creator account to access analytics.</p>
+        </div>
+        <a
+          href="/onboarding"
+          className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-purple-600 via-pink-500 to-orange-500 text-white rounded-xl text-xs font-bold hover:opacity-90 transition-opacity shadow-md"
+        >
+          <Instagram className="w-4 h-4" />
+          Connect Instagram
+        </a>
+      </div>
+    );
+  }
+
+  const profile = status.profile || {};
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-4 p-4 bg-white border border-[#E3DCCF] rounded-xl">
+        {profile.profilePic ? (
+          <img src={profile.profilePic} alt={profile.username} className="w-12 h-12 rounded-full border-2 border-purple-400" />
+        ) : (
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
+            {(profile.username || "?")[0].toUpperCase()}
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h4 className="text-sm font-y2k font-extrabold text-[#1E2330]">@{profile.username}</h4>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px] font-bold">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              Active
+            </span>
+          </div>
+          <p className="text-[10px] text-slate-500 font-medium truncate">{profile.name} • {profile.followers?.toLocaleString()} followers</p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={handleRefresh}
+            disabled={actionLoading}
+            className="px-3 py-2 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-bold hover:bg-blue-100 transition-colors disabled:opacity-50"
+          >
+            {actionLoading ? "..." : "↻ Refresh Token"}
+          </button>
+          <button
+            onClick={() => handleDisconnect(status.connectionId)}
+            disabled={actionLoading}
+            className="px-3 py-2 bg-red-50 text-red-600 rounded-lg text-[10px] font-bold hover:bg-red-100 transition-colors disabled:opacity-50"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-3">
+        <div className="p-3 bg-[#FAF8F3] border border-[#E3DCCF] rounded-lg text-center">
+          <div className="text-sm font-extrabold text-[#1E2330]">{profile.followers?.toLocaleString()}</div>
+          <div className="text-[10px] text-slate-500 font-medium">Followers</div>
+        </div>
+        <div className="p-3 bg-[#FAF8F3] border border-[#E3DCCF] rounded-lg text-center">
+          <div className="text-sm font-extrabold text-[#1E2330]">{profile.following?.toLocaleString()}</div>
+          <div className="text-[10px] text-slate-500 font-medium">Following</div>
+        </div>
+        <div className="p-3 bg-[#FAF8F3] border border-[#E3DCCF] rounded-lg text-center">
+          <div className="text-sm font-extrabold text-[#1E2330]">{profile.postCount?.toLocaleString()}</div>
+          <div className="text-[10px] text-slate-500 font-medium">Posts</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+

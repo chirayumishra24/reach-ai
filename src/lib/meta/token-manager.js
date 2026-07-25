@@ -1,12 +1,11 @@
 import crypto from "crypto";
 import { db } from "../db";
-import { socialAccounts } from "../db/schema";
-import { eq, lt } from "drizzle-orm";
+import { metaConnections, socialAccounts } from "../db/schema";
+import { eq, and, lt } from "drizzle-orm";
 import { getLongLivedToken } from "./oauth";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 12; // 96 bits for GCM is standard
-const TAG_LENGTH = 16;
 
 function getEncryptionKey() {
   const key = process.env.TOKEN_ENCRYPTION_KEY;
@@ -66,28 +65,70 @@ export function decryptToken(encryptedString) {
 }
 
 /**
- * Checks all active social accounts and refreshes tokens that are nearing expiry (e.g. within 15 days).
+ * Checks all active meta_connections and refreshes tokens nearing expiry (< 7 days).
+ * This is the primary refresh function for the multi-tenant system.
  */
 export async function refreshExpiringTokens() {
+  const sevenDaysFromNow = new Date();
+  sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+
+  // Query new multi-tenant meta_connections table
+  const expiringConnections = await db
+    .select()
+    .from(metaConnections)
+    .where(
+      and(
+        eq(metaConnections.status, "active"),
+        lt(metaConnections.expiresAt, sevenDaysFromNow)
+      )
+    );
+
+  console.log(`[TokenManager] Found ${expiringConnections.length} expiring meta connections.`);
+
+  for (const connection of expiringConnections) {
+    try {
+      const decryptedToken = decryptToken(connection.accessToken);
+      
+      console.log(`[TokenManager] Refreshing token for @${connection.igUsername}`);
+      
+      const refreshed = await getLongLivedToken(decryptedToken);
+      
+      const expiresAt = new Date();
+      expiresAt.setSeconds(expiresAt.getSeconds() + (refreshed.expiresIn || 5184000));
+
+      await db
+        .update(metaConnections)
+        .set({
+          accessToken: encryptToken(refreshed.accessToken),
+          expiresAt,
+          lastRefreshedAt: new Date(),
+        })
+        .where(eq(metaConnections.id, connection.id));
+
+      console.log(`[TokenManager] Successfully refreshed token for @${connection.igUsername}`);
+    } catch (error) {
+      console.error(`[TokenManager] Failed to refresh connection ${connection.id}:`, error.message);
+      
+      // Mark as expired on failure
+      await db
+        .update(metaConnections)
+        .set({ status: "expired" })
+        .where(eq(metaConnections.id, connection.id));
+    }
+  }
+
+  // Also refresh legacy socialAccounts (backward compatibility)
   const fifteenDaysFromNow = new Date();
   fifteenDaysFromNow.setDate(fifteenDaysFromNow.getDate() + 15);
 
-  const expiringAccounts = await db
+  const expiringSocial = await db
     .select()
     .from(socialAccounts)
-    .where(
-      lt(socialAccounts.tokenExpiresAt, fifteenDaysFromNow)
-    );
+    .where(lt(socialAccounts.tokenExpiresAt, fifteenDaysFromNow));
 
-  console.log(`[TokenManager] Found ${expiringAccounts.length} expiring tokens.`);
-
-  for (const account of expiringAccounts) {
+  for (const account of expiringSocial) {
     try {
       const decryptedToken = decryptToken(account.accessToken);
-      
-      console.log(`[TokenManager] Refreshing token for ${account.platformUsername} (${account.platform})`);
-      
-      // In Meta Graph API, to refresh a long-lived token, we exchange it again
       const refreshed = await getLongLivedToken(decryptedToken);
       
       const expiresAt = new Date();
@@ -101,10 +142,8 @@ export async function refreshExpiringTokens() {
           updatedAt: new Date(),
         })
         .where(eq(socialAccounts.id, account.id));
-
-      console.log(`[TokenManager] Successfully refreshed token for ${account.platformUsername}`);
     } catch (error) {
-      console.error(`[TokenManager] Failed to refresh token for account ID ${account.id}:`, error);
+      console.error(`[TokenManager] Failed to refresh legacy account ${account.id}:`, error);
     }
   }
 }

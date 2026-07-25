@@ -11,9 +11,12 @@ export default auth((req) => {
     nextUrl.pathname === "/" ||
     nextUrl.pathname === "/pricing" ||
     nextUrl.pathname === "/features" ||
-    nextUrl.pathname.startsWith("/api/billing/webhook");
+    nextUrl.pathname === "/guide" ||
+    nextUrl.pathname.startsWith("/api/billing/webhook") ||
+    nextUrl.pathname.startsWith("/api/meta/callback") ||
+    nextUrl.pathname.startsWith("/api/cron");
   
-  const isAuthRoute = nextUrl.pathname === "/login" || nextUrl.pathname === "/signup";
+  const isAuthRoute = nextUrl.pathname === "/login" || nextUrl.pathname === "/signup" || nextUrl.pathname === "/onboarding";
 
   if (isApiAuthRoute) return null;
 

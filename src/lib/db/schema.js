@@ -221,3 +221,63 @@ export const igAccountInsights = pgTable("ig_account_insights", {
 }, (table) => [
   uniqueIndex("ig_account_insights_account_date_unique").on(table.socialAccountId, table.date),
 ]);
+
+// ─── Multi-Tenant Meta Analytics Tables ──────────────────────
+
+export const metaConnectionStatusEnum = pgEnum("meta_connection_status", [
+  "active",
+  "expired",
+  "revoked",
+]);
+
+// Per-user Meta/Instagram OAuth credentials (encrypted)
+export const metaConnections = pgTable("meta_connections", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  accessToken: text("access_token").notNull(), // AES-256-GCM encrypted
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+  isShortLived: boolean("is_short_lived").default(false).notNull(),
+  fbPageId: varchar("fb_page_id", { length: 255 }),
+  fbPageName: varchar("fb_page_name", { length: 255 }),
+  pageAccessToken: text("page_access_token"), // AES-256-GCM encrypted
+  igAccountId: varchar("ig_account_id", { length: 255 }),
+  igUsername: varchar("ig_username", { length: 255 }),
+  igName: varchar("ig_name", { length: 255 }),
+  igProfilePic: text("ig_profile_pic"),
+  igFollowers: integer("ig_followers").default(0),
+  scopesGranted: text("scopes_granted"), // comma-separated scopes
+  connectedAt: timestamp("connected_at", { withTimezone: true }).defaultNow().notNull(),
+  lastRefreshedAt: timestamp("last_refreshed_at", { withTimezone: true }),
+  status: metaConnectionStatusEnum("status").default("active").notNull(),
+  allPagesJson: jsonb("all_pages_json").default([]).notNull(), // all discovered FB Pages + IG accounts
+}, (table) => [
+  index("meta_connections_user_idx").on(table.userId),
+  index("meta_connections_status_idx").on(table.status),
+  uniqueIndex("meta_connections_user_ig_unique").on(table.userId, table.igAccountId),
+]);
+
+// Cached analytics data to avoid hitting API rate limits
+export const analyticsCache = pgTable("analytics_cache", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  igAccountId: varchar("ig_account_id", { length: 255 }).notNull(),
+  dataType: varchar("data_type", { length: 64 }).notNull(), // profile | posts | insights | audience | ai_insights
+  data: jsonb("data").default({}).notNull(),
+  fetchedAt: timestamp("fetched_at", { withTimezone: true }).defaultNow().notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+}, (table) => [
+  index("analytics_cache_user_idx").on(table.userId),
+  index("analytics_cache_type_idx").on(table.userId, table.igAccountId, table.dataType),
+]);
+
+// Per-user settings and preferences
+export const userSettings = pgTable("user_settings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull().unique(),
+  defaultIgAccount: varchar("default_ig_account", { length: 255 }),
+  refreshFrequency: varchar("refresh_frequency", { length: 32 }).default("daily").notNull(), // hourly | daily | weekly
+  emailReports: boolean("email_reports").default(false).notNull(),
+  theme: varchar("theme", { length: 16 }).default("light").notNull(), // light | dark | system
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});

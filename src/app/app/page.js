@@ -14,6 +14,7 @@ import Analytics from "@/components/Analytics";
 import Settings from "@/components/Settings";
 import InstagramDashboard from "@/components/InstagramDashboard";
 import PostAnalytics from "@/components/PostAnalytics";
+import MetaAnalyticsDashboard from "@/components/MetaAnalyticsDashboard";
 
 export default function AppPage() {
   const { data: session, status } = useSession();
@@ -94,6 +95,7 @@ export default function AppPage() {
                 <DiscoverHub onStartResearch={handleStartResearch} />
               )}
               {activeTab === "analytics" && <Analytics />}
+              {activeTab === "meta-analytics" && <MetaAnalyticsDashboard />}
               {activeTab === "accounts" && <Settings />}
             </>
           )}
