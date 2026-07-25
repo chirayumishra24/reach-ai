@@ -243,6 +243,68 @@ export default function Settings() {
             </div>
           </div>
         )}
+
+        {activeTab === "api" && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="paper-sheet p-8 space-y-6 shadow-xl border-2 border-[#E3DCCF]">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-lg bg-blue-600 text-white"><Zap className="w-5 h-5" /></div>
+                <div>
+                  <h4 className="text-xs font-y2k font-extrabold text-[#1E2330] uppercase tracking-wider">AI Intelligence Engine</h4>
+                  <p className="text-xs text-slate-500 font-medium">Configure API credentials and AI model preferences for content generation.</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <Field label="Google Gemini API Key">
+                  <input
+                    type="password"
+                    value={settings.geminiKey || ""}
+                    onChange={(e) => update("geminiKey", e.target.value)}
+                    placeholder="AIzaSy..."
+                    className="w-full px-4 py-3 rounded-xl bg-[#FAF8F3] border border-[#E3DCCF] text-xs font-y2k font-extrabold text-[#1E2330] focus:ring-2 focus:ring-blue-600 transition-all outline-none"
+                  />
+                  <p className="text-[10px] text-slate-500 mt-1">Used for AI script writing, post-level analysis, and automated insights.</p>
+                </Field>
+
+                <Field label="YouTube Data API Key (Optional)">
+                  <input
+                    type="password"
+                    value={settings.youtubeKey || ""}
+                    onChange={(e) => update("youtubeKey", e.target.value)}
+                    placeholder="AIzaSy..."
+                    className="w-full px-4 py-3 rounded-xl bg-[#FAF8F3] border border-[#E3DCCF] text-xs font-y2k font-extrabold text-[#1E2330] focus:ring-2 focus:ring-blue-600 transition-all outline-none"
+                  />
+                </Field>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <Field label="Primary AI Model">
+                    <select
+                      value={settings.aiModel || "pro"}
+                      onChange={(e) => update("aiModel", e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl bg-[#FAF8F3] border border-[#E3DCCF] text-xs font-y2k font-extrabold text-[#1E2330] focus:ring-2 focus:ring-blue-600 transition-all outline-none"
+                    >
+                      <option value="pro">Gemini 2.0 Flash (Fast & Intelligent)</option>
+                      <option value="ultra">Gemini 1.5 Pro (Advanced Reasoning)</option>
+                    </select>
+                  </Field>
+
+                  <Field label="Default Target Region">
+                    <select
+                      value={settings.defaultLocation || "IN"}
+                      onChange={(e) => update("defaultLocation", e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl bg-[#FAF8F3] border border-[#E3DCCF] text-xs font-y2k font-extrabold text-[#1E2330] focus:ring-2 focus:ring-blue-600 transition-all outline-none"
+                    >
+                      {LOCATIONS.map((loc) => (
+                        <option key={loc.code} value={loc.code}>{loc.label}</option>
+                      ))}
+                    </select>
+                  </Field>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Global Save Button */}

@@ -101,6 +101,13 @@ export async function GET(req) {
     });
   } catch (error) {
     console.error("GET insights error:", error);
-    return NextResponse.json({ message: "Failed to fetch insights" }, { status: 500 });
+    return NextResponse.json({
+      platformPerformance: [],
+      topTags: [],
+      topContent: [],
+      instagramPosts: [],
+      totals: { avgCtr: "0.0" },
+      _dbError: true
+    });
   }
 }

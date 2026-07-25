@@ -38,7 +38,7 @@ export async function GET(req) {
     return NextResponse.json(formattedHistory);
   } catch (error) {
     console.error("GET research history error:", error);
-    return NextResponse.json({ message: "Failed to fetch research history" }, { status: 500 });
+    return NextResponse.json([]);
   }
 }
 

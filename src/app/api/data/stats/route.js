@@ -70,6 +70,18 @@ export async function GET(req) {
     return NextResponse.json(stats);
   } catch (error) {
     console.error("GET stats error:", error);
-    return NextResponse.json({ message: "Failed to fetch stats" }, { status: 500 });
+    return NextResponse.json({
+      totalResearch: 0,
+      pendingApproval: 0,
+      approved: 0,
+      published: 0,
+      totalContent: 0,
+      totalClicks: 0,
+      totalViews: 0,
+      totalReach: 0,
+      totalFollowers: 0,
+      connectedAccountsCount: 0,
+      _dbError: true
+    });
   }
 }

@@ -8,8 +8,20 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata = {
-  title: "Reach.ai — Educational Content Engine",
-  description: "AI-powered educational content, research, and communication strategy for schools.",
+  title: "Reach.ai — AI Instagram & Meta Analytics Platform",
+  description: "Multi-tenant AI-powered Instagram & Meta analytics, insights, and automated growth recommendations.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/site.webmanifest",
+  appleWebApp: {
+    title: "Reach.ai",
+  },
 };
 
 import AuthProvider from "@/components/SessionProvider";

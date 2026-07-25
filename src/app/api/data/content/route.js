@@ -56,7 +56,7 @@ export async function GET(req) {
     return NextResponse.json(formattedItems);
   } catch (error) {
     console.error("GET content history error:", error);
-    return NextResponse.json({ message: "Failed to fetch content history" }, { status: 500 });
+    return NextResponse.json([]);
   }
 }
 

@@ -74,9 +74,7 @@ export default function Sidebar({ activeTab, onTabChange }) {
       {/* Header Branding / Blue Tape Label */}
       <div className="p-5 pb-6 pl-7">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/30 transform -rotate-3 hover:rotate-0 transition-transform">
-            <BrainCircuit className="w-6 h-6" />
-          </div>
+          <img src="/logo.png" alt="Reach.ai" className="w-10 h-10 rounded-xl shadow-md shadow-indigo-500/20 object-cover transform -rotate-3 hover:rotate-0 transition-transform" />
           <div className="hidden lg:block">
             <div className="blue-label-tag px-3 py-1 text-sm inline-block shadow-sm">
               Reach<span className="text-yellow-300">.ai</span>
