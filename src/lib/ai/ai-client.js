@@ -1,6 +1,6 @@
 /**
  * Unified AI Client
- * Central AI wrapper with retry logic, JSON mode, and model selection.
+ * Central AI wrapper with multi-provider fallback (Gemini -> Groq -> NVIDIA).
  */
 
 import { GoogleGenAI } from "@google/genai";
@@ -10,68 +10,157 @@ let _ai = null;
 function getAI() {
   if (!_ai) {
     const key = process.env.GEMINI_API_KEY;
-    if (!key) throw new Error("GEMINI_API_KEY not set");
+    if (!key) return null;
     _ai = new GoogleGenAI({ apiKey: key });
   }
   return _ai;
 }
 
-/**
- * Generate content with Gemini (used for research, SEO, editing).
- * @param {string} prompt
- * @param {"pro"|"flash"} tier — "pro" = Gemini 3.1 Pro, "flash" = fast model
- * @param {boolean} jsonMode — enforce JSON output
- * @param {number} maxRetries
- */
-export async function generate(prompt, { tier = "pro", jsonMode = false, maxRetries = 2 } = {}) {
-  const ai = getAI();
-  const model = tier === "pro" ? "gemini-3.1-pro-preview" : "gemini-3-flash-preview";
+async function generateGroq(prompt, { model = "llama-3.3-70b-versatile", temperature = 0.7, maxTokens = 4096, jsonMode = false } = {}) {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) throw new Error("GROQ_API_KEY not set");
+
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: "You are an elite content strategist and AI assistant." },
+        { role: "user", content: prompt }
+      ],
+      temperature,
+      max_tokens: maxTokens,
+      ...(jsonMode ? { response_format: { type: "json_object" } } : {})
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Groq API error (${response.status}): ${errorText}`);
+  }
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content || "";
+}
+
+async function generateNvidia(prompt, { model = "meta/llama-3.3-70b-instruct", temperature = 0.7, maxTokens = 4096, jsonMode = false, extraBody = {} } = {}) {
+  const keys = [
+    process.env.NVIDIA_API_KEY,
+    process.env.NVIDIA_API_KEY_2,
+    process.env.NVIDIA_API_KEY_3,
+  ].filter(k => k && !k.startsWith("YOUR_"));
+
+  if (keys.length === 0) throw new Error("No valid NVIDIA_API_KEY found");
+
+  const systemContent = jsonMode
+    ? "You are an elite content strategist and AI assistant. Return ONLY valid JSON. Do NOT include markdown code blocks, explanation, or reasoning tags."
+    : "You are an elite content strategist and AI assistant.";
 
   let lastError;
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+
+  for (const apiKey of keys) {
     try {
-      const config = { model, contents: prompt };
+      const response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: systemContent },
+            { role: "user", content: prompt }
+          ],
+          temperature,
+          max_tokens: maxTokens,
+          ...extraBody,
+        }),
+      });
 
-      if (jsonMode) {
-        config.config = { responseMimeType: "application/json" };
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`NVIDIA API error (${response.status}): ${errorText}`);
       }
 
-      const response = await ai.models.generateContent(config);
-      const text = response.text || "";
-
-      if (jsonMode) {
-        return parseJSON(text);
-      }
-      return text;
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content || "";
+      if (content) return content;
     } catch (err) {
       lastError = err;
-      console.error(`Gemini attempt ${attempt + 1} failed:`, err.message);
-      if (attempt < maxRetries) {
-        await sleep(1000 * (attempt + 1));
-      }
+      console.warn(`NVIDIA API Key attempt failed, trying next key:`, err.message);
     }
   }
 
-  throw new Error(`Gemini generation failed after ${maxRetries + 1} attempts: ${lastError?.message}`);
+  throw lastError || new Error("All NVIDIA API keys failed");
 }
 
 /**
- * Generate content with Gemini as a replacement for GPT-4.1 (used for script generation).
- * @param {string} prompt
- * @param {object} options
- * @param {number} options.maxRetries
- * @param {number} options.temperature — 0.7 default for creative writing
- * @param {number} options.maxTokens — cap output length
+ * Generate content with multi-provider fallback (Gemini -> Groq -> NVIDIA).
  */
-export async function generateGPT(prompt, { maxRetries = 2, temperature = 0.7, maxTokens = 8192 } = {}) {
-  const ai = getAI();
-  const model = "gemini-3.1-pro-preview";
+export async function generate(prompt, { tier = "pro", jsonMode = false, nvidiaModel = "meta/llama-3.3-70b-instruct", maxRetries = 1 } = {}) {
+  const errors = [];
 
-  let lastError;
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+  // Provider 1: Gemini
+  if (process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEY.startsWith("YOUR_")) {
     try {
+      const ai = getAI();
+      const model = tier === "pro" ? "gemini-3.1-pro-preview" : "gemini-3-flash-preview";
+      const config = { model, contents: prompt };
+      if (jsonMode) {
+        config.config = { responseMimeType: "application/json" };
+      }
+      const response = await ai.models.generateContent(config);
+      const text = response.text || "";
+      return jsonMode ? parseJSON(text) : text;
+    } catch (err) {
+      console.warn("Gemini provider failed, falling back:", err.message);
+      errors.push(`Gemini: ${err.message}`);
+    }
+  }
+
+  // Provider 2: Groq
+  if (process.env.GROQ_API_KEY && !process.env.GROQ_API_KEY.startsWith("YOUR_")) {
+    try {
+      const groqModel = nvidiaModel.includes("deepseek") ? "deepseek-r1-distill-llama-70b" : "llama-3.3-70b-versatile";
+      const text = await generateGroq(prompt, { model: groqModel, jsonMode });
+      return jsonMode ? parseJSON(text) : text;
+    } catch (err) {
+      console.warn("Groq provider failed, falling back:", err.message);
+      errors.push(`Groq: ${err.message}`);
+    }
+  }
+
+  // Provider 3: NVIDIA (Uses Llama for SEO/Content & DeepSeek for Research)
+  if (process.env.NVIDIA_API_KEY && !process.env.NVIDIA_API_KEY.startsWith("YOUR_")) {
+    try {
+      const text = await generateNvidia(prompt, { model: nvidiaModel, jsonMode });
+      return jsonMode ? parseJSON(text) : text;
+    } catch (err) {
+      console.warn("NVIDIA provider failed:", err.message);
+      errors.push(`NVIDIA: ${err.message}`);
+    }
+  }
+
+  throw new Error(`All AI providers failed: ${errors.join("; ")}`);
+}
+
+/**
+ * Generate content with multi-provider fallback (used for script generation).
+ */
+export async function generateGPT(prompt, { temperature = 0.7, maxTokens = 8192, nvidiaModel = "meta/llama-3.3-70b-instruct" } = {}) {
+  const errors = [];
+
+  // Provider 1: Gemini
+  if (process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEY.startsWith("YOUR_")) {
+    try {
+      const ai = getAI();
       const response = await ai.models.generateContent({
-        model,
+        model: "gemini-3.1-pro-preview",
         contents: prompt,
         config: {
           systemInstruction: "You are an elite content strategist and script writer. Write production-ready scripts that are specific, human, and platform-optimized.",
@@ -79,42 +168,72 @@ export async function generateGPT(prompt, { maxRetries = 2, temperature = 0.7, m
           maxOutputTokens: maxTokens,
         }
       });
-
       return response.text || "";
     } catch (err) {
-      lastError = err;
-      console.error(`Gemini (generateGPT substitute) attempt ${attempt + 1} failed:`, err.message);
-      if (attempt < maxRetries) {
-        await sleep(1000 * (attempt + 1));
-      }
+      console.warn("Gemini generateGPT failed, falling back:", err.message);
+      errors.push(`Gemini: ${err.message}`);
     }
   }
 
-  throw new Error(`Gemini (generateGPT substitute) generation failed after ${maxRetries + 1} attempts: ${lastError?.message}`);
+  // Provider 2: Groq (Llama 3.3 70B)
+  if (process.env.GROQ_API_KEY && !process.env.GROQ_API_KEY.startsWith("YOUR_")) {
+    try {
+      return await generateGroq(prompt, { model: "llama-3.3-70b-versatile", temperature, maxTokens: Math.min(maxTokens, 4096) });
+    } catch (err) {
+      console.warn("Groq generateGPT failed, falling back:", err.message);
+      errors.push(`Groq: ${err.message}`);
+    }
+  }
+
+  // Provider 3: NVIDIA (Llama 3.3 70B)
+  if (process.env.NVIDIA_API_KEY && !process.env.NVIDIA_API_KEY.startsWith("YOUR_")) {
+    try {
+      return await generateNvidia(prompt, { model: nvidiaModel, temperature, maxTokens: Math.min(maxTokens, 4096) });
+    } catch (err) {
+      console.warn("NVIDIA generateGPT failed:", err.message);
+      errors.push(`NVIDIA: ${err.message}`);
+    }
+  }
+
+  throw new Error(`All AI providers failed for generateGPT: ${errors.join("; ")}`);
+}
+
+/**
+ * Generate for Research tasks using DeepSeek model
+ */
+export async function generateResearch(prompt, { tier = "pro", jsonMode = true } = {}) {
+  return generate(prompt, { tier, jsonMode, nvidiaModel: "deepseek-ai/deepseek-r1" });
+}
+
+/**
+ * Generate for SEO & Content generation using Llama 3.3 model
+ */
+export async function generateSEOContent(prompt, { tier = "pro", jsonMode = true } = {}) {
+  return generate(prompt, { tier, jsonMode, nvidiaModel: "meta/llama-3.3-70b-instruct" });
 }
 
 /**
  * Generate with structured JSON output
  */
-export async function generateJSON(prompt, tier = "pro") {
-  return generate(prompt, { tier, jsonMode: true });
+export async function generateJSON(prompt, tier = "pro", nvidiaModel = "meta/llama-3.3-70b-instruct") {
+  return generate(prompt, { tier, jsonMode: true, nvidiaModel });
 }
 
 /**
- * Robust JSON parser — handles markdown-wrapped JSON
+ * Robust JSON parser — handles DeepSeek <think> reasoning tags and markdown blocks
  */
 function parseJSON(text) {
-  // Try direct parse first
-  try { return JSON.parse(text); } catch {}
+  // Strip DeepSeek reasoning blocks <think>...</think>
+  let cleaned = text.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
 
-  // Try extracting from markdown code blocks
-  const jsonBlock = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  try { return JSON.parse(cleaned); } catch {}
+
+  const jsonBlock = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/i);
   if (jsonBlock) {
     try { return JSON.parse(jsonBlock[1].trim()); } catch {}
   }
 
-  // Try finding JSON array or object
-  const jsonMatch = text.match(/(\[[\s\S]*\]|\{[\s\S]*\})/);
+  const jsonMatch = cleaned.match(/(\[[\s\S]*\]|\{[\s\S]*\})/);
   if (jsonMatch) {
     try { return JSON.parse(jsonMatch[1]); } catch {}
   }

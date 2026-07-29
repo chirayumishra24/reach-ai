@@ -3,7 +3,7 @@
  * Deep topic R&D focused on current trends, live signals, and viral fit.
  */
 
-import { generateJSON } from "./ai-client";
+import { generateResearch } from "./ai-client";
 
 const STOPWORDS = new Set([
   "about", "after", "also", "amid", "among", "and", "are", "because", "been", "being",
@@ -180,7 +180,7 @@ Tie every recommendation back to "${cleanedKeyword}".
 If evidence is mixed, say exactly where it is mixed.`;
 
   const tier = depth === "deep" ? "pro" : "flash";
-  const raw = await generateJSON(prompt, tier);
+  const raw = await generateResearch(prompt, { tier });
   return normalizeResearch(cleanedKeyword, raw, topicSnapshot);
 }
 
