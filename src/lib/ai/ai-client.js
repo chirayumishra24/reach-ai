@@ -66,7 +66,7 @@ async function generateNvidia(prompt, { model = "meta/llama-3.3-70b-instruct", t
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000);
+        const timeoutId = setTimeout(() => controller.abort(), 180000);
 
         const response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
           method: "POST",
