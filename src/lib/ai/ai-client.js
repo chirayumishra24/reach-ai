@@ -4,8 +4,10 @@
  */
 
 import { GoogleGenAI } from "@google/genai";
+import OpenAI from "openai";
 
 let _ai = null;
+let _nvidiaClients = {};
 
 function getAI() {
   if (!_ai) {
@@ -16,35 +18,72 @@ function getAI() {
   return _ai;
 }
 
-async function generateGroq(prompt, { model = "llama-3.3-70b-versatile", temperature = 0.7, maxTokens = 4096, jsonMode = false } = {}) {
+function getNvidiaClient(apiKey) {
+  if (!_nvidiaClients[apiKey]) {
+    _nvidiaClients[apiKey] = new OpenAI({
+      apiKey,
+      baseURL: "https://integrate.api.nvidia.com/v1",
+      timeout: 180000,
+    });
+  }
+  return _nvidiaClients[apiKey];
+}
+
+async function generateGroq(prompt, { model = "llama-3.3-70b-versatile", temperature = 0.7, maxTokens = 4096, jsonMode = false, maxRetries = 2 } = {}) {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("GROQ_API_KEY not set");
 
-  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: "You are an elite content strategist and AI assistant." },
-        { role: "user", content: prompt }
-      ],
-      temperature,
-      max_tokens: maxTokens,
-      ...(jsonMode ? { response_format: { type: "json_object" } } : {})
-    }),
-  });
+  let lastError;
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Groq API error (${response.status}): ${errorText}`);
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: jsonMode ? "You are an elite content strategist and AI assistant. Return ONLY valid JSON." : "You are an elite content strategist and AI assistant." },
+            { role: "user", content: prompt }
+          ],
+          temperature,
+          max_tokens: maxTokens,
+          ...(jsonMode ? { response_format: { type: "json_object" } } : {})
+        }),
+      });
+
+      if (response.status === 429) {
+        const errorText = await response.text();
+        const waitSeconds = parseFloat(errorText.match(/try again in ([0-9.]+)s/i)?.[1] || "15");
+        console.warn(`Groq rate limit (429) hit, waiting ${Math.ceil(waitSeconds)}s before retrying attempt ${attempt + 1}/${maxRetries}...`);
+        if (attempt < maxRetries) {
+          await sleep(Math.ceil((waitSeconds + 1) * 1000));
+          continue;
+        }
+        throw new Error(`Groq API Rate Limit (429): ${errorText}`);
+      }
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Groq API error (${response.status}): ${errorText}`);
+      }
+
+      const data = await response.json();
+      return data.choices?.[0]?.message?.content || "";
+    } catch (err) {
+      lastError = err;
+      if (err.message.includes("429") && attempt < maxRetries) {
+        await sleep(15000);
+        continue;
+      }
+      if (attempt === maxRetries) throw err;
+    }
   }
 
-  const data = await response.json();
-  return data.choices?.[0]?.message?.content || "";
+  throw lastError;
 }
 
 async function generateNvidia(prompt, { model = "meta/llama-3.3-70b-instruct", temperature = 0.7, maxTokens = 4096, jsonMode = false, extraBody = {} } = {}) {
@@ -63,47 +102,25 @@ async function generateNvidia(prompt, { model = "meta/llama-3.3-70b-instruct", t
   let lastError;
 
   for (const apiKey of keys) {
-    for (let attempt = 0; attempt < 2; attempt++) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 180000);
+    try {
+      const client = getNvidiaClient(apiKey);
+      const completion = await client.chat.completions.create({
+        model,
+        messages: [
+          { role: "system", content: systemContent },
+          { role: "user", content: prompt }
+        ],
+        temperature,
+        max_tokens: maxTokens,
+        ...(jsonMode ? { response_format: { type: "json_object" } } : {}),
+        ...extraBody,
+      });
 
-        const response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
-          method: "POST",
-          signal: controller.signal,
-          headers: {
-            "Authorization": `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "User-Agent": "ReachAI/1.0",
-          },
-          body: JSON.stringify({
-            model,
-            messages: [
-              { role: "system", content: systemContent },
-              { role: "user", content: prompt }
-            ],
-            temperature,
-            max_tokens: maxTokens,
-            ...extraBody,
-          }),
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`NVIDIA API error (${response.status}): ${errorText}`);
-        }
-
-        const data = await response.json();
-        const content = data.choices?.[0]?.message?.content || "";
-        if (content) return content;
-      } catch (err) {
-        lastError = err;
-        console.warn(`NVIDIA key attempt ${attempt + 1} failed:`, err.message);
-        if (attempt < 1) await sleep(1500);
-      }
+      const content = completion.choices?.[0]?.message?.content || "";
+      if (content) return content;
+    } catch (err) {
+      lastError = err;
+      console.warn(`NVIDIA API Key attempt failed:`, err.message);
     }
   }
 
@@ -111,12 +128,24 @@ async function generateNvidia(prompt, { model = "meta/llama-3.3-70b-instruct", t
 }
 
 /**
- * Generate content with multi-provider fallback (NVIDIA -> Groq -> Gemini).
+ * Generate content with multi-provider fallback (Groq Primary -> NVIDIA -> Gemini).
  */
 export async function generate(prompt, { tier = "pro", jsonMode = false, nvidiaModel = "meta/llama-3.3-70b-instruct", maxRetries = 1 } = {}) {
   const errors = [];
 
-  // Provider 1: NVIDIA (Primary - Llama 3.3 for SEO/Content & DeepSeek for Research)
+  // Provider 1: Groq (Primary)
+  if (process.env.GROQ_API_KEY && !process.env.GROQ_API_KEY.startsWith("YOUR_")) {
+    try {
+      const groqModel = nvidiaModel.includes("deepseek") ? "deepseek-r1-distill-llama-70b" : "llama-3.3-70b-versatile";
+      const text = await generateGroq(prompt, { model: groqModel, jsonMode });
+      return jsonMode ? parseJSON(text) : text;
+    } catch (err) {
+      console.warn("Groq primary provider failed, falling back to NVIDIA:", err.message);
+      errors.push(`Groq: ${err.message}`);
+    }
+  }
+
+  // Provider 2: NVIDIA (Secondary Fallback)
   const nvidiaKeys = [process.env.NVIDIA_API_KEY, process.env.NVIDIA_API_KEY_2, process.env.NVIDIA_API_KEY_3].filter(k => k && !k.startsWith("YOUR_"));
   if (nvidiaKeys.length > 0) {
     try {
@@ -125,18 +154,6 @@ export async function generate(prompt, { tier = "pro", jsonMode = false, nvidiaM
     } catch (err) {
       console.warn("NVIDIA provider failed, falling back:", err.message);
       errors.push(`NVIDIA: ${err.message}`);
-    }
-  }
-
-  // Provider 2: Groq
-  if (process.env.GROQ_API_KEY && !process.env.GROQ_API_KEY.startsWith("YOUR_")) {
-    try {
-      const groqModel = nvidiaModel.includes("deepseek") ? "deepseek-r1-distill-llama-70b" : "llama-3.3-70b-versatile";
-      const text = await generateGroq(prompt, { model: groqModel, jsonMode });
-      return jsonMode ? parseJSON(text) : text;
-    } catch (err) {
-      console.warn("Groq provider failed, falling back:", err.message);
-      errors.push(`Groq: ${err.message}`);
     }
   }
 
@@ -167,7 +184,17 @@ export async function generate(prompt, { tier = "pro", jsonMode = false, nvidiaM
 export async function generateGPT(prompt, { temperature = 0.7, maxTokens = 8192, nvidiaModel = "meta/llama-3.3-70b-instruct" } = {}) {
   const errors = [];
 
-  // Provider 1: NVIDIA (Primary - Llama 3.3 70B)
+  // Provider 1: Groq (Primary - Llama 3.3 70B)
+  if (process.env.GROQ_API_KEY && !process.env.GROQ_API_KEY.startsWith("YOUR_")) {
+    try {
+      return await generateGroq(prompt, { model: "llama-3.3-70b-versatile", temperature, maxTokens: Math.min(maxTokens, 4096) });
+    } catch (err) {
+      console.warn("Groq generateGPT failed, falling back to NVIDIA:", err.message);
+      errors.push(`Groq: ${err.message}`);
+    }
+  }
+
+  // Provider 2: NVIDIA (Secondary - Llama 3.3 70B)
   const nvidiaKeys = [process.env.NVIDIA_API_KEY, process.env.NVIDIA_API_KEY_2, process.env.NVIDIA_API_KEY_3].filter(k => k && !k.startsWith("YOUR_"));
   if (nvidiaKeys.length > 0) {
     try {
@@ -175,16 +202,6 @@ export async function generateGPT(prompt, { temperature = 0.7, maxTokens = 8192,
     } catch (err) {
       console.warn("NVIDIA generateGPT failed, falling back:", err.message);
       errors.push(`NVIDIA: ${err.message}`);
-    }
-  }
-
-  // Provider 2: Groq (Llama 3.3 70B)
-  if (process.env.GROQ_API_KEY && !process.env.GROQ_API_KEY.startsWith("YOUR_")) {
-    try {
-      return await generateGroq(prompt, { model: "llama-3.3-70b-versatile", temperature, maxTokens: Math.min(maxTokens, 4096) });
-    } catch (err) {
-      console.warn("Groq generateGPT failed, falling back:", err.message);
-      errors.push(`Groq: ${err.message}`);
     }
   }
 
