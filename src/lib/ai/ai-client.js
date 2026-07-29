@@ -63,36 +63,47 @@ async function generateNvidia(prompt, { model = "meta/llama-3.3-70b-instruct", t
   let lastError;
 
   for (const apiKey of keys) {
-    try {
-      const response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model,
-          messages: [
-            { role: "system", content: systemContent },
-            { role: "user", content: prompt }
-          ],
-          temperature,
-          max_tokens: maxTokens,
-          ...extraBody,
-        }),
-      });
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`NVIDIA API error (${response.status}): ${errorText}`);
+        const response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+          method: "POST",
+          signal: controller.signal,
+          headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "ReachAI/1.0",
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: "system", content: systemContent },
+              { role: "user", content: prompt }
+            ],
+            temperature,
+            max_tokens: maxTokens,
+            ...extraBody,
+          }),
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`NVIDIA API error (${response.status}): ${errorText}`);
+        }
+
+        const data = await response.json();
+        const content = data.choices?.[0]?.message?.content || "";
+        if (content) return content;
+      } catch (err) {
+        lastError = err;
+        console.warn(`NVIDIA key attempt ${attempt + 1} failed:`, err.message);
+        if (attempt < 1) await sleep(1500);
       }
-
-      const data = await response.json();
-      const content = data.choices?.[0]?.message?.content || "";
-      if (content) return content;
-    } catch (err) {
-      lastError = err;
-      console.warn(`NVIDIA API Key attempt failed, trying next key:`, err.message);
     }
   }
 
