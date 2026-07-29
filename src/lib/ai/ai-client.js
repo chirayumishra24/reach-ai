@@ -100,26 +100,20 @@ async function generateNvidia(prompt, { model = "meta/llama-3.3-70b-instruct", t
 }
 
 /**
- * Generate content with multi-provider fallback (Gemini -> Groq -> NVIDIA).
+ * Generate content with multi-provider fallback (NVIDIA -> Groq -> Gemini).
  */
 export async function generate(prompt, { tier = "pro", jsonMode = false, nvidiaModel = "meta/llama-3.3-70b-instruct", maxRetries = 1 } = {}) {
   const errors = [];
 
-  // Provider 1: Gemini
-  if (process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEY.startsWith("YOUR_")) {
+  // Provider 1: NVIDIA (Primary - Llama 3.3 for SEO/Content & DeepSeek for Research)
+  const nvidiaKeys = [process.env.NVIDIA_API_KEY, process.env.NVIDIA_API_KEY_2, process.env.NVIDIA_API_KEY_3].filter(k => k && !k.startsWith("YOUR_"));
+  if (nvidiaKeys.length > 0) {
     try {
-      const ai = getAI();
-      const model = tier === "pro" ? "gemini-3.1-pro-preview" : "gemini-3-flash-preview";
-      const config = { model, contents: prompt };
-      if (jsonMode) {
-        config.config = { responseMimeType: "application/json" };
-      }
-      const response = await ai.models.generateContent(config);
-      const text = response.text || "";
+      const text = await generateNvidia(prompt, { model: nvidiaModel, jsonMode });
       return jsonMode ? parseJSON(text) : text;
     } catch (err) {
-      console.warn("Gemini provider failed, falling back:", err.message);
-      errors.push(`Gemini: ${err.message}`);
+      console.warn("NVIDIA provider failed, falling back:", err.message);
+      errors.push(`NVIDIA: ${err.message}`);
     }
   }
 
@@ -135,14 +129,21 @@ export async function generate(prompt, { tier = "pro", jsonMode = false, nvidiaM
     }
   }
 
-  // Provider 3: NVIDIA (Uses Llama for SEO/Content & DeepSeek for Research)
-  if (process.env.NVIDIA_API_KEY && !process.env.NVIDIA_API_KEY.startsWith("YOUR_")) {
+  // Provider 3: Gemini
+  if (process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEY.startsWith("YOUR_")) {
     try {
-      const text = await generateNvidia(prompt, { model: nvidiaModel, jsonMode });
+      const ai = getAI();
+      const model = tier === "pro" ? "gemini-3.1-pro-preview" : "gemini-3-flash-preview";
+      const config = { model, contents: prompt };
+      if (jsonMode) {
+        config.config = { responseMimeType: "application/json" };
+      }
+      const response = await ai.models.generateContent(config);
+      const text = response.text || "";
       return jsonMode ? parseJSON(text) : text;
     } catch (err) {
-      console.warn("NVIDIA provider failed:", err.message);
-      errors.push(`NVIDIA: ${err.message}`);
+      console.warn("Gemini provider failed:", err.message);
+      errors.push(`Gemini: ${err.message}`);
     }
   }
 
@@ -155,7 +156,28 @@ export async function generate(prompt, { tier = "pro", jsonMode = false, nvidiaM
 export async function generateGPT(prompt, { temperature = 0.7, maxTokens = 8192, nvidiaModel = "meta/llama-3.3-70b-instruct" } = {}) {
   const errors = [];
 
-  // Provider 1: Gemini
+  // Provider 1: NVIDIA (Primary - Llama 3.3 70B)
+  const nvidiaKeys = [process.env.NVIDIA_API_KEY, process.env.NVIDIA_API_KEY_2, process.env.NVIDIA_API_KEY_3].filter(k => k && !k.startsWith("YOUR_"));
+  if (nvidiaKeys.length > 0) {
+    try {
+      return await generateNvidia(prompt, { model: nvidiaModel, temperature, maxTokens: Math.min(maxTokens, 4096) });
+    } catch (err) {
+      console.warn("NVIDIA generateGPT failed, falling back:", err.message);
+      errors.push(`NVIDIA: ${err.message}`);
+    }
+  }
+
+  // Provider 2: Groq (Llama 3.3 70B)
+  if (process.env.GROQ_API_KEY && !process.env.GROQ_API_KEY.startsWith("YOUR_")) {
+    try {
+      return await generateGroq(prompt, { model: "llama-3.3-70b-versatile", temperature, maxTokens: Math.min(maxTokens, 4096) });
+    } catch (err) {
+      console.warn("Groq generateGPT failed, falling back:", err.message);
+      errors.push(`Groq: ${err.message}`);
+    }
+  }
+
+  // Provider 3: Gemini
   if (process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEY.startsWith("YOUR_")) {
     try {
       const ai = getAI();
@@ -170,28 +192,8 @@ export async function generateGPT(prompt, { temperature = 0.7, maxTokens = 8192,
       });
       return response.text || "";
     } catch (err) {
-      console.warn("Gemini generateGPT failed, falling back:", err.message);
+      console.warn("Gemini generateGPT failed:", err.message);
       errors.push(`Gemini: ${err.message}`);
-    }
-  }
-
-  // Provider 2: Groq (Llama 3.3 70B)
-  if (process.env.GROQ_API_KEY && !process.env.GROQ_API_KEY.startsWith("YOUR_")) {
-    try {
-      return await generateGroq(prompt, { model: "llama-3.3-70b-versatile", temperature, maxTokens: Math.min(maxTokens, 4096) });
-    } catch (err) {
-      console.warn("Groq generateGPT failed, falling back:", err.message);
-      errors.push(`Groq: ${err.message}`);
-    }
-  }
-
-  // Provider 3: NVIDIA (Llama 3.3 70B)
-  if (process.env.NVIDIA_API_KEY && !process.env.NVIDIA_API_KEY.startsWith("YOUR_")) {
-    try {
-      return await generateNvidia(prompt, { model: nvidiaModel, temperature, maxTokens: Math.min(maxTokens, 4096) });
-    } catch (err) {
-      console.warn("NVIDIA generateGPT failed:", err.message);
-      errors.push(`NVIDIA: ${err.message}`);
     }
   }
 
