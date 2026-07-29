@@ -1,10 +1,25 @@
 const META_API_VERSION = "v22.0";
 const META_GRAPH_URL = "https://graph.facebook.com";
 
-const getAppCredentials = () => {
+const getAppCredentials = (req) => {
   const clientId = process.env.META_CLIENT_ID || process.env.AUTH_FACEBOOK_ID;
   const clientSecret = process.env.META_CLIENT_SECRET || process.env.AUTH_FACEBOOK_SECRET;
-  const redirectUri = process.env.META_REDIRECT_URI || `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/api/meta/callback`;
+  
+  let baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL;
+  if (!baseUrl && process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    baseUrl = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+  if (!baseUrl && process.env.VERCEL_URL) {
+    baseUrl = `https://${process.env.VERCEL_URL}`;
+  }
+  if (!baseUrl && req?.url) {
+    try { baseUrl = new URL(req.url).origin; } catch {}
+  }
+  if (!baseUrl) {
+    baseUrl = "http://localhost:3000";
+  }
+
+  const redirectUri = process.env.META_REDIRECT_URI || `${baseUrl}/api/meta/callback`;
   
   return { clientId, clientSecret, redirectUri };
 };
@@ -12,8 +27,8 @@ const getAppCredentials = () => {
 /**
  * Builds the Meta/Facebook OAuth URL for connecting Instagram Business.
  */
-export function getMetaAuthUrl(state) {
-  const { clientId, redirectUri } = getAppCredentials();
+export function getMetaAuthUrl(state, req) {
+  const { clientId, redirectUri } = getAppCredentials(req);
   const scopes = [
     "email",
     "public_profile",

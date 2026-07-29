@@ -16,7 +16,7 @@ export async function GET(req) {
       JSON.stringify({ userId: session.user.id, csrf: csrfToken })
     ).toString("base64url");
 
-    const authUrl = getMetaAuthUrl(state);
+    const authUrl = getMetaAuthUrl(state, req);
 
     return NextResponse.redirect(authUrl);
   } catch (error) {

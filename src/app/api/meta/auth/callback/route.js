@@ -14,8 +14,20 @@ export async function GET(req) {
   const errorDescription = searchParams.get("error_description");
   const errorReason = searchParams.get("error_reason");
 
-  // Determine the dashboard URL to redirect back to
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  // Determine the base URL dynamically from request, NEXTAUTH_URL, or Vercel env
+  let baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL;
+  if (!baseUrl && process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    baseUrl = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+  if (!baseUrl && process.env.VERCEL_URL) {
+    baseUrl = `https://${process.env.VERCEL_URL}`;
+  }
+  if (!baseUrl) {
+    try { baseUrl = new URL(req.url).origin; } catch {}
+  }
+  if (!baseUrl) {
+    baseUrl = "http://localhost:3000";
+  }
 
   // User denied permission
   if (error) {
