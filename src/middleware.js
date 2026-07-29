@@ -42,7 +42,7 @@ export default auth((req) => {
 
 export const config = {
   matcher: [
-    // Protect dashboard, app, setting, api routes, except static assets
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.png|.*\\.jpg|.*\\.svg).*)",
+    // Protect dashboard, app, setting, api routes, except static assets & webmanifest
+    "/((?!_next/static|_next/image|favicon.ico|site.webmanifest|.*\\.webmanifest|.*\\.png|.*\\.jpg|.*\\.svg|.*\\.json).*)",
   ],
 };
