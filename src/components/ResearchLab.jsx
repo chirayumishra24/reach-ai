@@ -81,7 +81,21 @@ export default function ResearchLab({ onResearchComplete, onGoToStudio, initialK
           language: "en",
         }),
       });
-      if (!res.ok) { const e = await res.json(); throw new Error(e.error || "Research failed"); }
+      if (!res.ok) {
+        let errMsg = "Research failed";
+        try {
+          const contentType = res.headers.get("content-type") || "";
+          if (contentType.includes("application/json")) {
+            const e = await res.json();
+            errMsg = e.error || e.message || errMsg;
+          }
+        } catch {}
+        throw new Error(errMsg);
+      }
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        throw new Error("Server returned an invalid non-JSON response. Please try again.");
+      }
       const data = await res.json();
       setResult(data.research);
       setPlatformData(data.platformData);

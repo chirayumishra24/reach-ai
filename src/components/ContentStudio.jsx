@@ -79,8 +79,19 @@ export default function ContentStudio({ researchContext, onSchedulePost }) {
         body: JSON.stringify({ keyword, format, style, audience, location, research: researchSummary, bundle: isBundle, performanceData }),
       });
       if (!res.ok) {
-        const failure = await res.json().catch(() => ({}));
-        throw new Error(failure.error || "Generation failed");
+        let errMsg = "Generation failed";
+        try {
+          const contentType = res.headers.get("content-type") || "";
+          if (contentType.includes("application/json")) {
+            const failure = await res.json();
+            errMsg = failure.error || failure.message || errMsg;
+          }
+        } catch {}
+        throw new Error(errMsg);
+      }
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        throw new Error("Server returned an invalid non-JSON response. Please try again.");
       }
       const data = await res.json();
       if (data.bundle) {
