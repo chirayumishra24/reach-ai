@@ -51,7 +51,6 @@ async function generateGroq(prompt, { model = "llama-3.3-70b-versatile", tempera
           ],
           temperature,
           max_tokens: maxTokens,
-          ...(jsonMode ? { response_format: { type: "json_object" } } : {})
         }),
       });
 
