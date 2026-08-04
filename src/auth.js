@@ -32,7 +32,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
         const cleanEmail = String(credentials.email).toLowerCase().trim();
-        
+
         let user = null;
         try {
           const [found] = await db
@@ -42,32 +42,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             .limit(1);
           user = found;
         } catch (dbErr) {
-          console.warn("Authorize DB lookup failed, proceeding with session fallback:", dbErr.message);
+          console.error("Authorize DB lookup failed:", dbErr.message);
+          return null; // fail closed, never let a DB error grant access
         }
 
-        if (user && user.passwordHash) {
-          try {
-            const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
-            if (isValid) {
-              return {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                orgId: user.orgId,
-              };
-            }
-          } catch (e) {
-            console.warn("Bcrypt compare error:", e.message);
-          }
+        if (!user || !user.passwordHash) {
+          return null; // no such account
+        }
+
+        try {
+          const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
+          if (!isValid) return null; // wrong password
+        } catch (e) {
+          console.error("Bcrypt compare error:", e.message);
+          return null;
         }
 
         return {
-          id: user?.id || `user-${Date.now()}`,
-          name: user?.name || cleanEmail.split("@")[0],
-          email: cleanEmail,
-          role: user?.role || "manager",
-          orgId: user?.orgId || null,
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          orgId: user.orgId,
         };
       },
     }),

@@ -1,7 +1,6 @@
 import { auth } from "@/auth";
 
 export default auth((req) => {
-  console.log("AUTH_SECRET present in middleware:", !!process.env.AUTH_SECRET);
   const isLoggedIn = !!req.auth;
 
   const { nextUrl } = req;
