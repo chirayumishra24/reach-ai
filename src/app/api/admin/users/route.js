@@ -1,14 +1,18 @@
 import { NextResponse } from "next/server";
 import { getUsers, saveUser, deleteUser } from "@/lib/db";
+import { auth } from "@/auth";
 
-// Helper to verify if the requester is an admin
+// Helper to verify if the requester is an admin.
+// IMPORTANT: this must come from the verified server session, never from a
+// client-supplied header — headers can be spoofed by anyone calling the API.
 async function verifyAdmin(req) {
-  const adminEmail = req.headers.get("x-admin-email");
-  if (!adminEmail) return false;
+  const session = await auth();
+  const sessionEmail = session?.user?.email;
+  if (!sessionEmail) return false;
 
   const users = await getUsers();
-  const user = users.find(u => u.email.toLowerCase() === adminEmail.toLowerCase());
-  return user && user.isAdmin;
+  const user = users.find(u => u.email.toLowerCase() === sessionEmail.toLowerCase());
+  return !!(user && user.isAdmin);
 }
 
 export async function GET(req) {
